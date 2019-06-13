@@ -1,0 +1,36 @@
+<idea-plugin>
+  <id>com.muedsa.intellij.textReader</id>
+  <name>TextReader for intellij</name>
+  <version>2019.06.12</version>
+  <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
+
+  <description><![CDATA[
+      A simple text reader inside intellij.<br>
+      <em>悄咪咪地看小说</em>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      2019.06.12 only read text.<br>
+      //TODO: more feature
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="173.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+      <toolWindow id="TextReaderTool" anchor="left" factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"/>
+  </extensions>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>
