@@ -45,7 +45,6 @@ public class Chapter {
         int offset = 0;
         try{
             CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
-            detector.add(new ParsingDetector(false));
             detector.add(JChardetFacade.getInstance());
             Charset charset = detector.detectCodepage(file.getInputStream(), 200);
             InputStreamReader reader = new InputStreamReader(file.getInputStream(), charset);
@@ -59,7 +58,7 @@ public class Chapter {
                     list.add(new Chapter(offset, lineContent.trim()));
                 }
             }
-            readerWindow.sendNotify("加载成功", file.getPath()+"<br><em>"+charset.displayName()+"</em><br>共"+list.size()+"章", NotificationType.INFORMATION);
+            readerWindow.sendNotify("加载成功", file.getPath()+"<br><em>"+charset.displayName()+"</em> 共"+list.size()+"章", NotificationType.INFORMATION);
         }
         catch (IOException e){
             e.printStackTrace();
