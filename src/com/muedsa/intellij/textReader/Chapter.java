@@ -1,20 +1,18 @@
 package com.muedsa.intellij.textReader;
 
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.muedsa.intellij.textReader.composes.ReaderWindow;
-import info.monitorenter.cpdetector.io.*;
+import com.muedsa.intellij.textReader.factory.NotificationFactory;
+import com.muedsa.intellij.textReader.io.MyBufferedReader;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Vector;
 
 public class Chapter {
     private int startOffset;
+    private int length;
     private String title;
 
-    public Chapter(int startOffset, String title) {
+    private Chapter(int startOffset, String title) {
         this.startOffset = startOffset;
         this.title = title;
     }
@@ -35,35 +33,61 @@ public class Chapter {
         this.title = title;
     }
 
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
     @Override
     public String toString() {
         return "●" + title;
     }
 
-    public static Vector<Chapter> getChapters(VirtualFile file, ReaderWindow readerWindow){
+    public static Vector<Chapter> getChapters(TextFile textFile){
         Vector<Chapter> list = new Vector<>();
         int offset = 0;
         try{
-            CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
-            detector.add(JChardetFacade.getInstance());
-            Charset charset = detector.detectCodepage(file.getInputStream(), 200);
-            InputStreamReader reader = new InputStreamReader(file.getInputStream(), charset);
-            BufferedReader bufferedReader = new BufferedReader(reader);
+            InputStreamReader reader = new InputStreamReader(textFile.getInputStream(), textFile.getCharset());
+            MyBufferedReader bufferedReader = new MyBufferedReader(reader);
             String lineContent = null;
-            while ((lineContent = bufferedReader.readLine()) != null){
-                offset += lineContent.getBytes(file.getCharset()).length;
+            Chapter previousChapter = null;
+            while ((lineContent = bufferedReader.readLineWithCRLF()) != null){
                 int startIndex = lineContent.indexOf("第");
                 int endIndex =  lineContent.indexOf("章");
                 if (startIndex >= 0 && endIndex > 0 && endIndex > startIndex && endIndex - startIndex < 10) {
-                    list.add(new Chapter(offset, lineContent.trim()));
+                    if(previousChapter != null){
+                        previousChapter.setLength(offset - previousChapter.getStartOffset());
+                    }
+                    previousChapter = new Chapter(offset, lineContent.trim());
+                    list.add(previousChapter);
                 }
+                offset += lineContent.getBytes(textFile.getCharset()).length;
             }
-            readerWindow.sendNotify("加载成功", file.getPath()+"<br><em>"+charset.displayName()+"</em> 共"+list.size()+"章", NotificationType.INFORMATION);
+            NotificationFactory.sendNotify("加载成功", textFile.getFilePath()+"<br><em>"+textFile.getCharset().displayName()+"</em> 共"+list.size()+"章", NotificationType.INFORMATION);
         }
         catch (IOException e){
             e.printStackTrace();
-            readerWindow.sendNotify("加载失败", e.getLocalizedMessage(), NotificationType.WARNING);
+            NotificationFactory.sendNotify("加载失败", e.getLocalizedMessage(), NotificationType.WARNING);
         }
         return list;
+    }
+
+    public static String getChapterContent(TextFile textFile, Chapter chapter){
+        String content = null;
+        try{
+            RandomAccessFile file = new RandomAccessFile(textFile.getFilePath(), "r");
+            file.skipBytes(chapter.getStartOffset());
+            byte[] bytes = new byte[chapter.getLength()];
+            file.read(bytes);
+            content = new String(bytes, textFile.getCharset());
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            NotificationFactory.sendNotify("文件读取错误", e.getLocalizedMessage(), NotificationType.ERROR);
+        }
+        return content;
     }
 }
