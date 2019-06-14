@@ -8,10 +8,15 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBList;
 import com.muedsa.intellij.textReader.Chapter;
+import com.muedsa.intellij.textReader.TextFile;
+import com.muedsa.intellij.textReader.factory.NotificationFactory;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.Vector;
 
 public class ReaderWindow {
@@ -22,29 +27,31 @@ public class ReaderWindow {
     private JButton previousButton;
     private JButton nextButton;
     private JTextArea textContent;
+    private JTabbedPane tab;
+    private JScrollPane textContentScroll;
 
     private Project project;
     private ToolWindow toolWindow;
 
+    private TextFile textFile;
+
     public ReaderWindow(Project project, ToolWindow toolWindow) {
         this.project = project;
         this.toolWindow = toolWindow;
+        new NotificationFactory(project);
         createUIComponents();
     }
 
     private void createUIComponents(){
+        SpinnerModel spinnerModel = new SpinnerNumberModel(12, 0, 100, 1);
 
-        readerPanel.addKeyListener(new KeyAdapter(){
-            /**
-             * Invoked when a key has been pressed.
-             *
-             * @param e
-             */
+        fontSizeSpinner.setModel(spinnerModel);
+
+        fontSizeSpinner.addChangeListener(new ChangeListener() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if(e.isAltDown() && e.getKeyCode() == KeyEvent.VK_DOWN){
-                    toolWindow.hide(null);
-                }
+            public void stateChanged(ChangeEvent e) {
+                float fontSize = (float)((int)fontSizeSpinner.getValue());
+                textContent.setFont(textContent.getFont().deriveFont(fontSize));
             }
         });
 
@@ -58,8 +65,15 @@ public class ReaderWindow {
             public void actionPerformed(ActionEvent e) {
                 VirtualFile file = FileChooser.chooseFile(new TextFileChooserDescriptor(), project, null);
                 if(file != null){
-                    Vector<Chapter> list = Chapter.getChapters(file, ReaderWindow.this);
-                    titleList.setListData(list);
+                    try {
+                        textFile = new TextFile(file);
+                        Vector<Chapter> list = Chapter.getChapters(textFile);
+                        titleList.setListData(list);
+                    }
+                    catch (IOException error){
+                        error.printStackTrace();
+                        NotificationFactory.sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    }
                 }
             }
         });
@@ -68,10 +82,32 @@ public class ReaderWindow {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2){
-                   Chapter chapter = titleList.getSelectedValue();
-                   if(chapter != null){
-                       System.out.println(chapter.getStartOffset());
-                   }
+                    setTextContent();
+                    tab.setSelectedIndex(1);
+                }
+            }
+        });
+
+        nextButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int count = titleList.getItemsCount();
+                int index = titleList.getSelectedIndex() + 1;
+                if(index + 1 <= count){
+                    titleList.setSelectedIndex(index);
+                    setTextContent();
+                }
+            }
+
+        });
+
+        previousButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int index = titleList.getSelectedIndex() - 1;
+                if(index >= 0){
+                    titleList.setSelectedIndex(index);
+                    setTextContent();
                 }
             }
         });
@@ -81,8 +117,12 @@ public class ReaderWindow {
         return readerPanel;
     }
 
-    public void sendNotify(String title, String content, NotificationType type){
-        Notification notification = new Notification("TextReaderSiderTool", title,content, type);
-        notification.notify(project);
+    private void setTextContent(){
+        Chapter chapter = titleList.getSelectedValue();
+        if(chapter != null){
+            textContent.setText(Chapter.getChapterContent(textFile, chapter));
+            textContent.setCaretPosition(0);
+        }
     }
+
 }
