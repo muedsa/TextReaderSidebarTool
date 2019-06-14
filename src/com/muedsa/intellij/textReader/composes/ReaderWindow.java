@@ -58,7 +58,7 @@ public class ReaderWindow {
             public void actionPerformed(ActionEvent e) {
                 VirtualFile file = FileChooser.chooseFile(new TextFileChooserDescriptor(), project, null);
                 if(file != null){
-                    Vector<Chapter> list = Chapter.getChapters(file);
+                    Vector<Chapter> list = Chapter.getChapters(file, ReaderWindow.this);
                     titleList.setListData(list);
                 }
             }
@@ -79,5 +79,10 @@ public class ReaderWindow {
 
     public JPanel getContent(){
         return readerPanel;
+    }
+
+    public void sendNotify(String title, String content, NotificationType type){
+        Notification notification = new Notification("TextReaderSiderTool", title,content, type);
+        notification.notify(project);
     }
 }

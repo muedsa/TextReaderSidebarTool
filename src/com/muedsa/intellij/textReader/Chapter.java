@@ -1,9 +1,13 @@
 package com.muedsa.intellij.textReader;
 
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
+import com.muedsa.intellij.textReader.composes.ReaderWindow;
+import info.monitorenter.cpdetector.io.*;
 
 import java.io.*;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Vector;
 
 public class Chapter {
@@ -36,11 +40,15 @@ public class Chapter {
         return "●" + title;
     }
 
-    public static Vector<Chapter> getChapters(VirtualFile file){
+    public static Vector<Chapter> getChapters(VirtualFile file, ReaderWindow readerWindow){
         Vector<Chapter> list = new Vector<>();
         int offset = 0;
         try{
-            InputStreamReader reader = new InputStreamReader(file.getInputStream(), file.getCharset());
+            CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
+            detector.add(new ParsingDetector(false));
+            detector.add(JChardetFacade.getInstance());
+            Charset charset = detector.detectCodepage(file.getInputStream(), 200);
+            InputStreamReader reader = new InputStreamReader(file.getInputStream(), charset);
             BufferedReader bufferedReader = new BufferedReader(reader);
             String lineContent = null;
             while ((lineContent = bufferedReader.readLine()) != null){
@@ -51,9 +59,11 @@ public class Chapter {
                     list.add(new Chapter(offset, lineContent.trim()));
                 }
             }
+            readerWindow.sendNotify("加载成功", file.getPath()+"<br><em>"+charset.displayName()+"</em><br>共"+list.size()+"章", NotificationType.INFORMATION);
         }
         catch (IOException e){
             e.printStackTrace();
+            readerWindow.sendNotify("加载失败", e.getLocalizedMessage(), NotificationType.WARNING);
         }
         return list;
     }
