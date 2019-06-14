@@ -2,4 +2,4 @@
 
 Working yet
 
-![](https://raw.githubusercontent.com/MUedsa/TextReaderSiderTool/master/temp.gif)
+![](https://github.com/MUedsa/TextReaderSiderTool/blob/master/temp.gif?raw=true)
