@@ -1,7 +1,7 @@
 package com.muedsa.intellij.textReader.composes;
 
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -11,6 +11,7 @@ import com.muedsa.intellij.textReader.Chapter;
 import com.muedsa.intellij.textReader.TextFile;
 import com.muedsa.intellij.textReader.factory.NotificationFactory;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
+import com.muedsa.intellij.textReader.state.TextReaderStateService;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -37,11 +38,14 @@ public class ReaderWindow {
 
     private TextFile textFile;
 
+    private TextReaderStateService textReaderStateService;
+
     public ReaderWindow(Project project, ToolWindow toolWindow) {
         this.project = project;
         this.toolWindow = toolWindow;
         new NotificationFactory(project);
         createUIComponents();
+        init();
     }
 
     private void createUIComponents(){
@@ -71,6 +75,8 @@ public class ReaderWindow {
                         textFile = new TextFile(file);
                         Vector<Chapter> list = Chapter.getChapters(textFile, chapterPrefix.getText(), chapterSuffix.getText());
                         titleList.setListData(list);
+                        textReaderStateService.setFilePath(textFile.getFilePath());
+                        textReaderStateService.setChapters(list);
                     }
                     catch (IOException error){
                         error.printStackTrace();
@@ -113,6 +119,20 @@ public class ReaderWindow {
                 }
             }
         });
+    }
+
+    private void init(){
+        textReaderStateService = ServiceManager.getService(TextReaderStateService.class);
+        if(textReaderStateService != null && textReaderStateService.getFilePath() != null && textReaderStateService.getChapters() != null){
+            try {
+                textFile = new TextFile(textReaderStateService.getFilePath());
+                titleList.setListData(textReaderStateService.getChapters());
+            }
+            catch (IOException error){
+                error.printStackTrace();
+                NotificationFactory.sendNotify("持久化文件加载错误", error.getLocalizedMessage(), NotificationType.ERROR);
+            }
+        }
     }
 
     public JPanel getContent(){

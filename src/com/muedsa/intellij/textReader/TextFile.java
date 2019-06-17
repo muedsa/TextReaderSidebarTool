@@ -4,8 +4,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import info.monitorenter.cpdetector.io.CodepageDetectorProxy;
 import info.monitorenter.cpdetector.io.JChardetFacade;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 
 public class TextFile {
@@ -19,6 +18,14 @@ public class TextFile {
     public TextFile(VirtualFile file) throws IOException {
         filePath = file.getPath();
         inputStream = file.getInputStream();
+        CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
+        detector.add(JChardetFacade.getInstance());
+        charset = detector.detectCodepage(inputStream, 200);
+    }
+
+    public TextFile(String filePath) throws IOException {
+        this.filePath = filePath;
+        inputStream = new BufferedInputStream(new FileInputStream(new File(filePath)));
         CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
         detector.add(JChardetFacade.getInstance());
         charset = detector.detectCodepage(inputStream, 200);

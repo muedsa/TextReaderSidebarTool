@@ -6,7 +6,7 @@
 
   <description><![CDATA[
       A simple text reader inside intellij.<br>
-      <em>悄咪咪地看小说</em>
+      <em>XD</em>
     ]]></description>
 
   <change-notes><![CDATA[
@@ -20,12 +20,12 @@
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
-  <!-- uncomment to enable plugin in all products
   <depends>com.intellij.modules.lang</depends>
-  -->
+
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+      <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
       <toolWindow id="TextReaderTool" anchor="left" factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"/>
   </extensions>
 
