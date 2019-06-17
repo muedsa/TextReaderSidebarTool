@@ -13,6 +13,12 @@ public class Chapter {
     private int length;
     private String title;
 
+    public Chapter() {
+        this.startOffset = 0;
+        this.length = 0;
+        this.title = null;
+    }
+
     private Chapter(int startOffset, String title) {
         this.startOffset = startOffset;
         this.title = title;
@@ -53,7 +59,7 @@ public class Chapter {
         try{
             InputStreamReader reader = new InputStreamReader(textFile.getInputStream(), textFile.getCharset());
             MyBufferedReader bufferedReader = new MyBufferedReader(reader);
-            String lineContent = null;
+            String lineContent;
             Chapter previousChapter = null;
             while ((lineContent = bufferedReader.readLineWithCRLF()) != null){
                 int startIndex = lineContent.indexOf(chapterPrefix);
@@ -66,6 +72,9 @@ public class Chapter {
                     list.add(previousChapter);
                 }
                 offset += lineContent.getBytes(textFile.getCharset()).length;
+            }
+            if(previousChapter != null){
+                previousChapter.setLength(offset - previousChapter.getStartOffset());
             }
             NotificationFactory.sendNotify("加载成功", textFile.getFilePath()+"<br><em>"+textFile.getCharset().displayName()+"</em> 共"+list.size()+"章", NotificationType.INFORMATION);
         }
