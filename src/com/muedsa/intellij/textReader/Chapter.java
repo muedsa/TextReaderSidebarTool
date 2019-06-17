@@ -6,6 +6,7 @@ import com.muedsa.intellij.textReader.io.MyBufferedReader;
 
 import java.io.*;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 public class Chapter {
     private int startOffset;
@@ -46,7 +47,7 @@ public class Chapter {
         return "●" + title;
     }
 
-    public static Vector<Chapter> getChapters(TextFile textFile){
+    public static Vector<Chapter> getChapters(TextFile textFile, String chapterPrefix, String chapterSuffix){
         Vector<Chapter> list = new Vector<>();
         int offset = 0;
         try{
@@ -55,9 +56,9 @@ public class Chapter {
             String lineContent = null;
             Chapter previousChapter = null;
             while ((lineContent = bufferedReader.readLineWithCRLF()) != null){
-                int startIndex = lineContent.indexOf("第");
-                int endIndex =  lineContent.indexOf("章");
-                if (startIndex >= 0 && endIndex > 0 && endIndex > startIndex && endIndex - startIndex < 10) {
+                int startIndex = lineContent.indexOf(chapterPrefix);
+                int endIndex =  lineContent.indexOf(chapterSuffix);
+                if (startIndex >= 0 && endIndex > 0 && endIndex > startIndex && endIndex - startIndex < 10 && lineContent.length()-endIndex < 50 && Pattern.matches("[0-9]+|[零一二三四五六七八九十百千万]+", lineContent.substring(startIndex + 1, endIndex))) {
                     if(previousChapter != null){
                         previousChapter.setLength(offset - previousChapter.getStartOffset());
                     }
