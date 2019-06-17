@@ -29,6 +29,8 @@ public class ReaderWindow {
     private JTextArea textContent;
     private JTabbedPane tab;
     private JScrollPane textContentScroll;
+    private JTextField chapterPrefix;
+    private JTextField chapterSuffix;
 
     private Project project;
     private ToolWindow toolWindow;
@@ -67,7 +69,7 @@ public class ReaderWindow {
                 if(file != null){
                     try {
                         textFile = new TextFile(file);
-                        Vector<Chapter> list = Chapter.getChapters(textFile);
+                        Vector<Chapter> list = Chapter.getChapters(textFile, chapterPrefix.getText(), chapterSuffix.getText());
                         titleList.setListData(list);
                     }
                     catch (IOException error){
