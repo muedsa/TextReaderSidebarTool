@@ -8,7 +8,7 @@ Working yet
 
 [Releases](https://github.com/MUedsa/TextReaderSiderTool/releases)
 
-Install: [#1](https://github.com/MUedsa/TextReaderSiderTool/issues/2)
+Install: [#1](https://github.com/MUedsa/TextReaderSiderTool/issues/1)
 
 ## note
 
