@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSiderTool for intellij</name>
-  <version>2019.06.17</version>
+  <version>2019.08.21</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -10,8 +10,19 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      2019.06.17 only read text.<br>
-      //TODO: more feature
+      <h3>2019.06.17<h3>
+      <ul>
+          <li>only read text</li>
+      </ul>
+      <hr/>
+
+      <h3>2019.08.21<h3>
+      <ul>
+          <li>more font style</li>
+          <li>find chapter by regex</li>
+          <li>more settings</li>
+      </ul>
+      <hr/>
     ]]>
   </change-notes>
 
