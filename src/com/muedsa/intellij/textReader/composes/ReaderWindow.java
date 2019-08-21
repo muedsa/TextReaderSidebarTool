@@ -16,9 +16,14 @@ import com.muedsa.intellij.textReader.state.TextReaderStateService;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Vector;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class ReaderWindow {
     private JPanel readerPanel;
@@ -27,11 +32,17 @@ public class ReaderWindow {
     private JSpinner fontSizeSpinner;
     private JButton previousButton;
     private JButton nextButton;
-    private JTextArea textContent;
+    private JTextPane textContent;
     private JTabbedPane tab;
     private JScrollPane textContentScroll;
-    private JTextField chapterPrefix;
-    private JTextField chapterSuffix;
+    private JTextField chapterPrefixEl;
+    private JTextField chapterSuffixEl;
+    private JTextField regexStringEl;
+    private JTextField fixTitleEl;
+    private JSpinner maxLineSizeSpinner;
+    private JSpinner lineSpaceSpinner;
+    private JSpinner firstLineIndentSpinner;
+    private JComboBox<String> fontFamilyEl;
 
     private Project project;
     private ToolWindow toolWindow;
@@ -46,46 +57,93 @@ public class ReaderWindow {
         new NotificationFactory(project);
         createUIComponents();
         init();
+        updateRegex();
     }
 
     private void createUIComponents(){
-        SpinnerModel spinnerModel = new SpinnerNumberModel(12, 0, 100, 1);
+        //字体
+        String[] fontFamilyNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 
-        fontSizeSpinner.setModel(spinnerModel);
+        DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>(fontFamilyNames);
+        fontFamilyEl.setModel(comboBoxModel);
+        fontFamilyEl.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED){
+                    updateFontFamily();
+                }
+            }
+        });
+        String currentFontFamily = textContent.getFont().getFamily();
+        int index = Arrays.binarySearch(fontFamilyNames, currentFontFamily);
+        if(index > 0){
+            fontFamilyEl.setSelectedIndex(index);
+        }
 
+        //字体大小
+        SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(12, 0, 100, 1);
+        fontSizeSpinner.setModel(fontSizeSpinnerModel);
         fontSizeSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                float fontSize = (float)((int)fontSizeSpinner.getValue());
-                textContent.setFont(textContent.getFont().deriveFont(fontSize));
+                updateFontSize();
+            }
+        });
+        //字体行间距
+        SpinnerModel lineSpaceSpinnerModel = new SpinnerNumberModel(0.5, 0, 2.5, 0.1);
+        lineSpaceSpinner.setModel(lineSpaceSpinnerModel);
+        lineSpaceSpinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                updateLineSpace();
+            }
+        });
+        //首行缩进
+        SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(0, 0, 4, 1);
+        firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
+        firstLineIndentSpinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                updateFirstLineIndent();
             }
         });
 
+        //标题解析最大字数限制设置
+        SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(20, 1, 200, 1);
+        maxLineSizeSpinner.setModel(maxLineSizeSpinnerModel);
+
+        //添加文件
         fileButton.addActionListener(new ActionListener() {
-            /**
-             * Invoked when an action occurs.
-             *
-             * @param e
-             */
             @Override
             public void actionPerformed(ActionEvent e) {
                 VirtualFile file = FileChooser.chooseFile(new TextFileChooserDescriptor(), project, null);
                 if(file != null){
                     try {
+                        updateRegex();
+                        Pattern pattern = Pattern.compile(regexStringEl.getText().trim());
                         textFile = new TextFile(file);
-                        Vector<Chapter> list = Chapter.getChapters(textFile, chapterPrefix.getText(), chapterSuffix.getText());
+                        Vector<Chapter> list = Chapter.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
                         titleList.setListData(list);
                         textReaderStateService.setFilePath(textFile.getFilePath());
                         textReaderStateService.setChapters(list);
+                    }
+                    catch (PatternSyntaxException error){
+                        error.printStackTrace();
+                        NotificationFactory.sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
                     }
                     catch (IOException error){
                         error.printStackTrace();
                         NotificationFactory.sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
                     }
+                    catch (Exception error){
+                        error.printStackTrace();
+                        NotificationFactory.sendNotify("其他错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    }
                 }
             }
         });
 
+        //点击章节
         titleList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -96,6 +154,7 @@ public class ReaderWindow {
             }
         });
 
+        //下一章
         nextButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -109,6 +168,7 @@ public class ReaderWindow {
 
         });
 
+        //上一章
         previousButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -122,6 +182,7 @@ public class ReaderWindow {
     }
 
     private void init(){
+        //持久化配置初始化
         textReaderStateService = ServiceManager.getService(TextReaderStateService.class);
         if(textReaderStateService != null && textReaderStateService.getFilePath() != null && textReaderStateService.getChapters() != null){
             try {
@@ -133,6 +194,62 @@ public class ReaderWindow {
                 NotificationFactory.sendNotify("持久化文件加载错误", error.getLocalizedMessage(), NotificationType.ERROR);
             }
         }
+
+        //字体风格初始化
+        updateFontSize();
+        updateLineSpace();
+        updateFirstLineIndent();
+    }
+
+    private void updateRegex(){
+        StringBuilder regexString = new StringBuilder(regexStringEl.getText().trim());
+        if(regexString.length() == 0){
+            //章节
+            regexString = new StringBuilder(chapterPrefixEl.getText().trim());
+            regexString.append("[0-9零一二三四五六七八九十百千万]+");
+            regexString.append(chapterSuffixEl.getText().trim());
+
+            //固定标题
+            String[] fixTitles = fixTitleEl.getText().trim().split("\\|");
+            for(String fixTitle : fixTitles){
+                if(fixTitle.length() > 0){
+                    regexString.append("|\\s*").append(fixTitle).append("\\s*");
+                }
+            }
+            regexStringEl.setText(regexString.toString());
+        }
+    }
+
+    private void updateFontFamily(){
+        String fontFamily = (String)fontFamilyEl.getSelectedItem();
+        StyledDocument styledDocument = textContent.getStyledDocument();
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setFontFamily(attributes, fontFamily);
+        styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
+    }
+
+    private void updateFontSize(){
+        int fontSize = (int)fontSizeSpinner.getValue();
+        StyledDocument styledDocument = textContent.getStyledDocument();
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setFontSize(attributes, fontSize);
+        styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
+    }
+
+    private void updateLineSpace(){
+        float lineSpace = ((Double)lineSpaceSpinner.getValue()).floatValue();
+        StyledDocument styledDocument = textContent.getStyledDocument();
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setLineSpacing(attributes, lineSpace);
+        styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
+    }
+
+    private void updateFirstLineIndent(){
+        float firstLineIndent = ((Integer)firstLineIndentSpinner.getValue()) * ((Integer)fontSizeSpinner.getValue()).floatValue();
+        StyledDocument styledDocument = textContent.getStyledDocument();
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setFirstLineIndent(attributes, firstLineIndent);
+        styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
     }
 
     public JPanel getContent(){
