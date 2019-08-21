@@ -21,7 +21,7 @@ Install: [#1](https://github.com/MUedsa/TextReaderSiderTool/issues/1)
 
 - 正则设置： 匹配章节标题的正则，可自定义正则，如果不存在，会把上面的设置解析为正则
 
-## note
+## Note
 
 #### 【Dev】.iml something
 
