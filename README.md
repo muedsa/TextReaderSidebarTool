@@ -25,6 +25,5 @@ Install: [#1](https://github.com/MUedsa/TextReaderSiderTool/issues/1)
 
 #### 【Dev】.iml something
 
-Add `<component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/resources/META-INF/plugin.xml" />`
-
-modify **module type** `type="PLUGIN_MODULE"`
+- Add `<component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/resources/META-INF/plugin.xml" />`  
+- modify **module type** `type="PLUGIN_MODULE"`
