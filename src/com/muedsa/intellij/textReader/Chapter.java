@@ -6,7 +6,9 @@ import com.muedsa.intellij.textReader.io.MyBufferedReader;
 
 import java.io.*;
 import java.util.Vector;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class Chapter {
     private int startOffset;
@@ -53,23 +55,24 @@ public class Chapter {
         return "●" + title;
     }
 
-    public static Vector<Chapter> getChapters(TextFile textFile, String chapterPrefix, String chapterSuffix){
+    public static Vector<Chapter> getChapters(TextFile textFile, int maxLineSize, Pattern pattern) {
         Vector<Chapter> list = new Vector<>();
         int offset = 0;
-        try{
+        try {
             InputStreamReader reader = new InputStreamReader(textFile.getInputStream(), textFile.getCharset());
             MyBufferedReader bufferedReader = new MyBufferedReader(reader);
             String lineContent;
             Chapter previousChapter = null;
             while ((lineContent = bufferedReader.readLineWithCRLF()) != null){
-                int startIndex = lineContent.indexOf(chapterPrefix);
-                int endIndex =  lineContent.indexOf(chapterSuffix);
-                if (startIndex >= 0 && endIndex > 0 && endIndex > startIndex && endIndex - startIndex < 10 && lineContent.length()-endIndex < 50 && Pattern.matches("[0-9]+|[零一二三四五六七八九十百千万]+", lineContent.substring(startIndex + 1, endIndex))) {
-                    if(previousChapter != null){
-                        previousChapter.setLength(offset - previousChapter.getStartOffset());
+                if(lineContent.length() <= maxLineSize){
+                    Matcher matcher = pattern.matcher(lineContent);
+                    if(matcher.find()){
+                        if(previousChapter != null){
+                            previousChapter.setLength(offset - previousChapter.getStartOffset());
+                        }
+                        previousChapter = new Chapter(offset, lineContent.trim());
+                        list.add(previousChapter);
                     }
-                    previousChapter = new Chapter(offset, lineContent.trim());
-                    list.add(previousChapter);
                 }
                 offset += lineContent.getBytes(textFile.getCharset()).length;
             }
@@ -81,6 +84,10 @@ public class Chapter {
         catch (IOException e){
             e.printStackTrace();
             NotificationFactory.sendNotify("加载失败", e.getLocalizedMessage(), NotificationType.WARNING);
+        }
+        catch (PatternSyntaxException error){
+            error.printStackTrace();
+            NotificationFactory.sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
         }
         return list;
     }
