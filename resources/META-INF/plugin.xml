@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSiderTool for intellij</name>
-  <version>2020.10.13</version>
+  <version>2020.11.25</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -27,6 +27,11 @@
       <h3>2020.10.13<h3>
       <ul>
           <li>Setting: modify JPane to JScrollPane, toot window height lower</li>
+      </ul>
+
+      <h3>2020.11.25<h3>
+      <ul>
+          <li>Clear Button: clear StateService data, chapter list and chapter content</li>
       </ul>
       <hr/>
     ]]>
