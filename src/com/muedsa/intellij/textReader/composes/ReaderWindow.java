@@ -12,6 +12,8 @@ import com.muedsa.intellij.textReader.TextFile;
 import com.muedsa.intellij.textReader.factory.NotificationFactory;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.state.TextReaderStateService;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -24,6 +26,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.Collections;
 
 public class ReaderWindow {
     private JPanel readerPanel;
@@ -43,6 +46,7 @@ public class ReaderWindow {
     private JSpinner lineSpaceSpinner;
     private JSpinner firstLineIndentSpinner;
     private JComboBox<String> fontFamilyEl;
+    private JButton clearButton;
 
     private Project project;
     private ToolWindow toolWindow;
@@ -66,12 +70,9 @@ public class ReaderWindow {
 
         DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>(fontFamilyNames);
         fontFamilyEl.setModel(comboBoxModel);
-        fontFamilyEl.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED){
-                    updateFontFamily();
-                }
+        fontFamilyEl.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED){
+                updateFontFamily();
             }
         });
         String currentFontFamily = textContent.getFont().getFamily();
@@ -83,64 +84,57 @@ public class ReaderWindow {
         //字体大小
         SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(12, 0, 100, 1);
         fontSizeSpinner.setModel(fontSizeSpinnerModel);
-        fontSizeSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                updateFontSize();
-            }
-        });
+        fontSizeSpinner.addChangeListener(e -> updateFontSize());
         //字体行间距
         SpinnerModel lineSpaceSpinnerModel = new SpinnerNumberModel(0.5, 0, 2.5, 0.1);
         lineSpaceSpinner.setModel(lineSpaceSpinnerModel);
-        lineSpaceSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                updateLineSpace();
-            }
-        });
+        lineSpaceSpinner.addChangeListener(e -> updateLineSpace());
         //首行缩进
         SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(0, 0, 4, 1);
         firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
-        firstLineIndentSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                updateFirstLineIndent();
-            }
-        });
+        firstLineIndentSpinner.addChangeListener(e -> updateFirstLineIndent());
 
         //标题解析最大字数限制设置
         SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(20, 1, 200, 1);
         maxLineSizeSpinner.setModel(maxLineSizeSpinnerModel);
 
         //添加文件
-        fileButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                VirtualFile file = FileChooser.chooseFile(new TextFileChooserDescriptor(), project, null);
-                if(file != null){
-                    try {
-                        updateRegex();
-                        Pattern pattern = Pattern.compile(regexStringEl.getText().trim());
-                        textFile = new TextFile(file);
-                        Vector<Chapter> list = Chapter.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
-                        titleList.setListData(list);
-                        textReaderStateService.setFilePath(textFile.getFilePath());
-                        textReaderStateService.setChapters(list);
-                    }
-                    catch (PatternSyntaxException error){
-                        error.printStackTrace();
-                        NotificationFactory.sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
-                    }
-                    catch (IOException error){
-                        error.printStackTrace();
-                        NotificationFactory.sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
-                    }
-                    catch (Exception error){
-                        error.printStackTrace();
-                        NotificationFactory.sendNotify("其他错误", error.getLocalizedMessage(), NotificationType.ERROR);
-                    }
+        fileButton.addActionListener(e -> {
+            VirtualFile file = FileChooser.chooseFile(new TextFileChooserDescriptor(), project, null);
+            if(file != null){
+                try {
+                    updateRegex();
+                    Pattern pattern = Pattern.compile(regexStringEl.getText().trim());
+                    textFile = new TextFile(file);
+                    Vector<Chapter> list = Chapter.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
+                    titleList.setListData(list);
+                    textReaderStateService.setFilePath(textFile.getFilePath());
+                    textReaderStateService.setChapters(list);
+                }
+                catch (PatternSyntaxException error){
+                    error.printStackTrace();
+                    NotificationFactory.sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                }
+                catch (IOException error){
+                    error.printStackTrace();
+                    NotificationFactory.sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                }
+                catch (Exception error){
+                    error.printStackTrace();
+                    NotificationFactory.sendNotify("其他错误", error.getLocalizedMessage(), NotificationType.ERROR);
                 }
             }
+        });
+
+        //清除
+        clearButton.addActionListener(e -> {
+            textFile = null;
+            Vector<Chapter> list = new Vector<>(0);
+            titleList.setListData(list);
+            textContent.setText("");
+            textContent.setCaretPosition(0);
+            textReaderStateService.setFilePath("");
+            textReaderStateService.setChapters(list);
         });
 
         //点击章节
@@ -186,8 +180,11 @@ public class ReaderWindow {
         textReaderStateService = ServiceManager.getService(TextReaderStateService.class);
         if(textReaderStateService != null && textReaderStateService.getFilePath() != null && textReaderStateService.getChapters() != null){
             try {
-                textFile = new TextFile(textReaderStateService.getFilePath());
-                titleList.setListData(textReaderStateService.getChapters());
+                String filePath = textReaderStateService.getFilePath();
+                if(StringUtils.isNotBlank(filePath)){
+                    textFile = new TextFile(filePath);
+                    titleList.setListData(textReaderStateService.getChapters());
+                }
             }
             catch (IOException error){
                 error.printStackTrace();
