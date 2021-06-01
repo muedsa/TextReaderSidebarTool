@@ -97,11 +97,25 @@ public class ChapterUtil {
         StringBuilder formatContentBuilder = new StringBuilder(chapterContent.length());
         for(String paragraph : paragraphs){
             if(StringUtils.isNotBlank(paragraph)){
-                String newParagraph = StringUtils.trim(paragraph);
+                String newParagraph = trim(paragraph);
                 formatContentBuilder.append(newParagraph);
                 formatContentBuilder.append(LF_CR);
             }
         }
         return formatContentBuilder.toString();
+    }
+
+    public static String trim(String text) {
+        char[] val = text.toCharArray();
+        int st = 0;
+        int len = val.length;
+
+        while ((st < len) && (val[st] <= ' ' || val[st] == '　')) {
+            st++;
+        }
+        while ((st < len) && (val[len - 1] <= ' ' || val[st] == '　')) {
+            len--;
+        }
+        return ((st > 0) || (len < val.length)) ? text.substring(st, len) : text;
     }
 }
