@@ -12,12 +12,10 @@ import com.muedsa.intellij.textReader.TextFile;
 import com.muedsa.intellij.textReader.factory.NotificationFactory;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.state.TextReaderStateService;
-import org.apache.commons.collections.CollectionUtils;
+import com.muedsa.intellij.textReader.util.ChapterUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -26,7 +24,6 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.Collections;
 
 public class ReaderWindow {
     private JPanel readerPanel;
@@ -106,7 +103,7 @@ public class ReaderWindow {
                     updateRegex();
                     Pattern pattern = Pattern.compile(regexStringEl.getText().trim());
                     textFile = new TextFile(file);
-                    Vector<Chapter> list = Chapter.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
+                    Vector<Chapter> list = ChapterUtil.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
                     titleList.setListData(list);
                     textReaderStateService.setFilePath(textFile.getFilePath());
                     textReaderStateService.setChapters(list);
@@ -256,7 +253,7 @@ public class ReaderWindow {
     private void setTextContent(){
         Chapter chapter = titleList.getSelectedValue();
         if(chapter != null){
-            textContent.setText(Chapter.getChapterContent(textFile, chapter));
+            textContent.setText(ChapterUtil.formatChapterContent(textFile, chapter));
             textContent.setCaretPosition(0);
         }
     }
