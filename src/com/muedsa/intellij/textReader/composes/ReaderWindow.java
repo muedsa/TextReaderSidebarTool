@@ -87,7 +87,7 @@ public class ReaderWindow {
         lineSpaceSpinner.setModel(lineSpaceSpinnerModel);
         lineSpaceSpinner.addChangeListener(e -> updateLineSpace());
         //首行缩进
-        SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(0, 0, 4, 1);
+        SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(2, 0, 4, 1);
         firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
         firstLineIndentSpinner.addChangeListener(e -> updateFirstLineIndent());
 

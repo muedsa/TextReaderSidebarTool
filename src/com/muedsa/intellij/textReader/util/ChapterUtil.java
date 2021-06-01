@@ -98,7 +98,6 @@ public class ChapterUtil {
         for(String paragraph : paragraphs){
             if(StringUtils.isNotBlank(paragraph)){
                 String newParagraph = StringUtils.trim(paragraph);
-                newParagraph = StringUtils.leftPad(newParagraph, 4);
                 formatContentBuilder.append(newParagraph);
                 formatContentBuilder.append(LF_CR);
             }
