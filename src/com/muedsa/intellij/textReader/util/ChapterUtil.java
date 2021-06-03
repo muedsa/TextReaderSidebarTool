@@ -18,6 +18,11 @@ import java.util.regex.PatternSyntaxException;
 public class ChapterUtil {
 
     public static final String LF_CR = "\n\r";
+    public static final String LF = "\n";
+    public static final char HALF_WIDTH_SPACE = ' ';
+    public static final char FULL_WIDTH_SPACE = '　';
+
+    public static int CONFIG_PARAGRAPH_SPACE = 1;
 
     public static Vector<Chapter> getChapters(TextFile textFile, int maxLineSize, Pattern pattern) {
         Vector<Chapter> list = new Vector<>();
@@ -93,13 +98,18 @@ public class ChapterUtil {
     }
 
     public static String formatChapterContent(String chapterContent){
-        String[] paragraphs = StringUtils.split(chapterContent, LF_CR);
+        chapterContent = StringUtils.replace(chapterContent, LF_CR, LF);
+        String[] paragraphs = StringUtils.split(chapterContent, LF);
         StringBuilder formatContentBuilder = new StringBuilder(chapterContent.length());
         for(String paragraph : paragraphs){
             if(StringUtils.isNotBlank(paragraph)){
                 String newParagraph = trim(paragraph);
                 formatContentBuilder.append(newParagraph);
-                formatContentBuilder.append(LF_CR);
+                int i = 0;
+                while(CONFIG_PARAGRAPH_SPACE + 1 > 0 && i < CONFIG_PARAGRAPH_SPACE + 1){
+                    formatContentBuilder.append(LF);
+                    i++;
+                }
             }
         }
         return formatContentBuilder.toString();
@@ -110,10 +120,10 @@ public class ChapterUtil {
         int st = 0;
         int len = val.length;
 
-        while ((st < len) && (val[st] <= ' ' || val[st] == '　')) {
+        while ((st < len) && (val[st] <= HALF_WIDTH_SPACE || val[st] == FULL_WIDTH_SPACE)) {
             st++;
         }
-        while ((st < len) && (val[len - 1] <= ' ' || val[st] == '　')) {
+        while ((st < len) && (val[len - 1] <= HALF_WIDTH_SPACE || val[st] == FULL_WIDTH_SPACE)) {
             len--;
         }
         return ((st > 0) || (len < val.length)) ? text.substring(st, len) : text;

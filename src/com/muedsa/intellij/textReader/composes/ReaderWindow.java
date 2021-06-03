@@ -44,6 +44,7 @@ public class ReaderWindow {
     private JSpinner firstLineIndentSpinner;
     private JComboBox<String> fontFamilyEl;
     private JButton clearButton;
+    private JSpinner paragraphSpaceSpinner;
 
     private Project project;
     private ToolWindow toolWindow;
@@ -90,6 +91,11 @@ public class ReaderWindow {
         SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(2, 0, 4, 1);
         firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
         firstLineIndentSpinner.addChangeListener(e -> updateFirstLineIndent());
+
+        //段落间隔
+        SpinnerModel paragraphSpaceSpinnerModel = new SpinnerNumberModel(1, 0, 4, 1);
+        paragraphSpaceSpinner.setModel(paragraphSpaceSpinnerModel);
+        paragraphSpaceSpinner.addChangeListener(e -> updateParagraphSpace());
 
         //标题解析最大字数限制设置
         SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(20, 1, 200, 1);
@@ -244,6 +250,11 @@ public class ReaderWindow {
         SimpleAttributeSet attributes = new SimpleAttributeSet();
         StyleConstants.setFirstLineIndent(attributes, firstLineIndent);
         styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
+    }
+
+    private void updateParagraphSpace(){
+        ChapterUtil.CONFIG_PARAGRAPH_SPACE = (int) paragraphSpaceSpinner.getValue();
+        setTextContent();
     }
 
     public JPanel getContent(){
