@@ -155,7 +155,7 @@ public class ReaderWindow {
 
         searchTextField.getDocument().addDocumentListener(new DocumentAdapter() {
 
-            private List<searchThread> threadList = new ArrayList<>();
+            private final List<searchThread> threadList = new ArrayList<>();
 
             private void search(String searchText){
                 if(StringUtils.isEmpty(searchText)){
@@ -181,7 +181,7 @@ public class ReaderWindow {
 
             class searchThread extends Thread{
                 private boolean cancel = false;
-                private String searchText;
+                private final String searchText;
 
                 public searchThread(String searchText){
                     super();
