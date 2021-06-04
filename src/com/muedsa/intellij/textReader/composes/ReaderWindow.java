@@ -6,6 +6,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBList;
 import com.muedsa.intellij.textReader.Chapter;
 import com.muedsa.intellij.textReader.TextFile;
@@ -14,16 +15,22 @@ import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.state.TextReaderStateService;
 import com.muedsa.intellij.textReader.util.ChapterUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class ReaderWindow {
     private JPanel readerPanel;
@@ -45,6 +52,7 @@ public class ReaderWindow {
     private JComboBox<String> fontFamilyEl;
     private JButton clearButton;
     private JSpinner paragraphSpaceSpinner;
+    private JTextField searchTextField;
 
     private Project project;
     private ToolWindow toolWindow;
@@ -52,6 +60,8 @@ public class ReaderWindow {
     private TextFile textFile;
 
     private TextReaderStateService textReaderStateService;
+
+    private static Vector<Chapter> CHAPTER_LIST = new Vector<>(0);
 
     public ReaderWindow(Project project, ToolWindow toolWindow) {
         this.project = project;
@@ -109,10 +119,11 @@ public class ReaderWindow {
                     updateRegex();
                     Pattern pattern = Pattern.compile(regexStringEl.getText().trim());
                     textFile = new TextFile(file);
-                    Vector<Chapter> list = ChapterUtil.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
-                    titleList.setListData(list);
+                    CHAPTER_LIST = ChapterUtil.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
+                    titleList.setListData(CHAPTER_LIST);
                     textReaderStateService.setFilePath(textFile.getFilePath());
-                    textReaderStateService.setChapters(list);
+                    textReaderStateService.setChapters(CHAPTER_LIST);
+                    searchTextField.setEnabled(true);
                 }
                 catch (PatternSyntaxException error){
                     error.printStackTrace();
@@ -132,12 +143,67 @@ public class ReaderWindow {
         //清除
         clearButton.addActionListener(e -> {
             textFile = null;
-            Vector<Chapter> list = new Vector<>(0);
-            titleList.setListData(list);
+            CHAPTER_LIST = new Vector<>(0);
+            titleList.setListData(CHAPTER_LIST);
             textContent.setText("");
             textContent.setCaretPosition(0);
             textReaderStateService.setFilePath("");
-            textReaderStateService.setChapters(list);
+            textReaderStateService.setChapters(CHAPTER_LIST);
+            searchTextField.setEnabled(false);
+        });
+
+
+        searchTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+
+            private List<searchThread> threadList = new ArrayList<>();
+
+            private void search(String searchText){
+                if(StringUtils.isEmpty(searchText)){
+                    if(titleList.getModel().getSize() != CHAPTER_LIST.size()){
+                        titleList.setListData(CHAPTER_LIST);
+                    }
+                }else{
+                    Vector<Chapter> tempChapterList = CHAPTER_LIST.stream().filter(c -> c.getTitle().contains(searchText)).collect(Collectors.toCollection(Vector::new));
+                    if(tempChapterList.size() != CHAPTER_LIST.size()){
+                        titleList.setListData(tempChapterList);
+                    }
+                }
+            }
+
+            @Override
+            protected void textChanged(@NotNull DocumentEvent documentEvent){
+                threadList.forEach(searchThread::cancel);
+                String searchText = searchTextField.getText();
+                searchThread thread = new searchThread(searchText);
+                thread.start();
+                threadList.add(thread);
+            }
+
+            class searchThread extends Thread{
+                private boolean cancel = false;
+                private String searchText;
+
+                public searchThread(String searchText){
+                    super();
+                    this.searchText = searchText;
+                }
+
+                @Override
+                public void run(){
+                    try{
+                        Thread.sleep(300);
+                        if(!cancel){
+                            search(searchText);
+                        }
+                        threadList.remove(this);
+                    } catch(InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+                public void cancel(){
+                    cancel = true;
+                }
+            }
         });
 
         //点击章节
@@ -186,7 +252,9 @@ public class ReaderWindow {
                 String filePath = textReaderStateService.getFilePath();
                 if(StringUtils.isNotBlank(filePath)){
                     textFile = new TextFile(filePath);
-                    titleList.setListData(textReaderStateService.getChapters());
+                    CHAPTER_LIST = textReaderStateService.getChapters();
+                    titleList.setListData(CHAPTER_LIST);
+                    searchTextField.setEnabled(true);
                 }
             }
             catch (IOException error){
