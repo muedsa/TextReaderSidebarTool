@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSiderTool for intellij</name>
-  <version>2021.06.01</version>
+  <version>2021.06.04</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -43,6 +43,11 @@
       <h3>2021.06.03<h3>
       <ul>
           <li>Setting: modify paragraph space</li>
+      </ul>
+
+      <h3>2021.06.04<h3>
+      <ul>
+          <li>chapter search</li>
       </ul>
       <hr/>
     ]]>
