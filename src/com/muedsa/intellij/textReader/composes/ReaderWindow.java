@@ -149,6 +149,7 @@ public class ReaderWindow {
             textContent.setCaretPosition(0);
             textReaderStateService.setFilePath("");
             textReaderStateService.setChapters(CHAPTER_LIST);
+            searchTextField.setText("");
             searchTextField.setEnabled(false);
         });
 
