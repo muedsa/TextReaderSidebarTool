@@ -35,6 +35,8 @@ public class TextFile {
         inputStream = new BufferedInputStream(new FileInputStream(file));
         CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
         detector.add(JChardetFacade.getInstance());
+        detector.add(ASCIIDetector.getInstance());
+        detector.add(UnicodeDetector.getInstance());
         charset = detector.detectCodepage(file.toURI().toURL());
     }
 
