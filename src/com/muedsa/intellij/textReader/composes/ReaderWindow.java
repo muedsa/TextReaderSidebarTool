@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -108,7 +107,7 @@ public class ReaderWindow {
         paragraphSpaceSpinner.addChangeListener(e -> updateParagraphSpace());
 
         //标题解析最大字数限制设置
-        SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(20, 1, 200, 1);
+        SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(30, 1, 200, 1);
         maxLineSizeSpinner.setModel(maxLineSizeSpinnerModel);
 
         //添加文件

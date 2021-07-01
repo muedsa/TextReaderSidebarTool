@@ -1,10 +1,14 @@
 package com.muedsa.intellij.textReader;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import info.monitorenter.cpdetector.io.ASCIIDetector;
 import info.monitorenter.cpdetector.io.CodepageDetectorProxy;
 import info.monitorenter.cpdetector.io.JChardetFacade;
+import info.monitorenter.cpdetector.io.UnicodeDetector;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 public class TextFile {
@@ -20,15 +24,18 @@ public class TextFile {
         inputStream = file.getInputStream();
         CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
         detector.add(JChardetFacade.getInstance());
-        charset = detector.detectCodepage(inputStream, 200);
+        detector.add(ASCIIDetector.getInstance());
+        detector.add(UnicodeDetector.getInstance());
+        charset = detector.detectCodepage(new File(filePath).toURI().toURL());
     }
 
     public TextFile(String filePath) throws IOException {
         this.filePath = filePath;
-        inputStream = new BufferedInputStream(new FileInputStream(new File(filePath)));
+        File file = new File(filePath);
+        inputStream = new BufferedInputStream(new FileInputStream(file));
         CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
         detector.add(JChardetFacade.getInstance());
-        charset = detector.detectCodepage(inputStream, 200);
+        charset = detector.detectCodepage(file.toURI().toURL());
     }
 
     public String getFilePath() {

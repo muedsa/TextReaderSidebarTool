@@ -65,6 +65,7 @@
       <h3>2021.07.01<h3>
       <ul>
           <li>click chapter clear chapter title list filter</li>
+          <li>detect file charset</li>
       </ul>
       <hr/>
     ]]>

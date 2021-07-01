@@ -41,7 +41,7 @@ public class ChapterUtil {
                         }else if(offset > 0){
                             list.add(new Chapter(0, offset, "章节前部分"));
                         }
-                        previousChapter = new Chapter(offset, lineContent.trim());
+                        previousChapter = new Chapter(offset, trim(lineContent));
                         list.add(previousChapter);
                     }
                 }
