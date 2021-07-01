@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSiderTool for intellij</name>
-  <version>2021.06.24</version>
+  <version>2021.07.01</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -59,6 +59,12 @@
       <h3>2021.06.24<h3>
       <ul>
           <li>clear chapter search text</li>
+      </ul>
+      <hr/>
+
+      <h3>2021.07.01<h3>
+      <ul>
+          <li>click chapter clear chapter title list filter</li>
       </ul>
       <hr/>
     ]]>

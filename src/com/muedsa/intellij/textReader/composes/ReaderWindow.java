@@ -212,6 +212,9 @@ public class ReaderWindow {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2){
+                    Chapter temp = titleList.getSelectedValue();
+                    titleList.setListData(CHAPTER_LIST);
+                    titleList.setSelectedValue(temp, false);
                     setTextContent();
                     tab.setSelectedIndex(1);
                 }
