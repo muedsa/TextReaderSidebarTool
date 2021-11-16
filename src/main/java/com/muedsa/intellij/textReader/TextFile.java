@@ -7,8 +7,6 @@ import info.monitorenter.cpdetector.io.JChardetFacade;
 import info.monitorenter.cpdetector.io.UnicodeDetector;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 
 public class TextFile {

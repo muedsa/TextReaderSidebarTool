@@ -1,7 +1,6 @@
 package com.muedsa.intellij.textReader.composes;
 
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -10,8 +9,8 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBList;
 import com.muedsa.intellij.textReader.Chapter;
 import com.muedsa.intellij.textReader.TextFile;
-import com.muedsa.intellij.textReader.factory.NotificationFactory;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
+import com.muedsa.intellij.textReader.notify.Notification;
 import com.muedsa.intellij.textReader.state.TextReaderStateService;
 import com.muedsa.intellij.textReader.util.ChapterUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +64,7 @@ public class ReaderWindow {
     public ReaderWindow(Project project, ToolWindow toolWindow) {
         this.project = project;
         this.toolWindow = toolWindow;
-        new NotificationFactory(project);
+        toolWindow.setTitle("TextReader");
         createUIComponents();
         init();
         updateRegex();
@@ -118,7 +117,17 @@ public class ReaderWindow {
                     updateRegex();
                     Pattern pattern = Pattern.compile(regexStringEl.getText().trim());
                     textFile = new TextFile(file);
-                    CHAPTER_LIST = ChapterUtil.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
+                    try {
+                        CHAPTER_LIST = ChapterUtil.getChapters(textFile, (int)maxLineSizeSpinner.getValue(), pattern);
+                        sendNotify("加载成功", textFile.getFilePath()+"<br><em>"+textFile.getCharset().displayName()+"</em> 共"+CHAPTER_LIST.size()+"章", NotificationType.INFORMATION);
+                    }catch (IOException error){
+                        error.printStackTrace();
+                        sendNotify("加载失败", error.getLocalizedMessage(), NotificationType.WARNING);
+                    }
+                    catch (PatternSyntaxException error){
+                        error.printStackTrace();
+                        sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    }
                     titleList.setListData(CHAPTER_LIST);
                     textReaderStateService.setFilePath(textFile.getFilePath());
                     textReaderStateService.setChapters(CHAPTER_LIST);
@@ -126,15 +135,15 @@ public class ReaderWindow {
                 }
                 catch (PatternSyntaxException error){
                     error.printStackTrace();
-                    NotificationFactory.sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
                 }
                 catch (IOException error){
                     error.printStackTrace();
-                    NotificationFactory.sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
                 }
                 catch (Exception error){
                     error.printStackTrace();
-                    NotificationFactory.sendNotify("其他错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    sendNotify("其他错误", error.getLocalizedMessage(), NotificationType.ERROR);
                 }
             }
         });
@@ -249,7 +258,7 @@ public class ReaderWindow {
 
     private void init(){
         //持久化配置初始化
-        textReaderStateService = ServiceManager.getService(TextReaderStateService.class);
+        textReaderStateService = TextReaderStateService.getInstance();
         if(textReaderStateService != null && textReaderStateService.getFilePath() != null && textReaderStateService.getChapters() != null){
             try {
                 String filePath = textReaderStateService.getFilePath();
@@ -262,7 +271,7 @@ public class ReaderWindow {
             }
             catch (IOException error){
                 error.printStackTrace();
-                NotificationFactory.sendNotify("持久化文件加载错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                sendNotify("持久化文件加载错误", error.getLocalizedMessage(), NotificationType.ERROR);
             }
         }
 
@@ -335,9 +344,21 @@ public class ReaderWindow {
     private void setTextContent(){
         Chapter chapter = titleList.getSelectedValue();
         if(chapter != null){
-            textContent.setText(ChapterUtil.formatChapterContent(textFile, chapter));
+            String text = "";
+            try{
+                text = ChapterUtil.formatChapterContent(textFile, chapter);
+            }
+            catch (IOException e){
+                e.printStackTrace();
+                sendNotify("文件读取错误", e.getLocalizedMessage(), NotificationType.ERROR);
+            }
+            textContent.setText(text);
             textContent.setCaretPosition(0);
         }
+    }
+
+    private void sendNotify(String title, String content, NotificationType type){
+        Notification.sendNotify(project, title, content, type);
     }
 
 }

@@ -1,0 +1,30 @@
+plugins {
+    id 'org.jetbrains.intellij' version '1.2.1'
+    id 'java'
+}
+
+group 'com.muedsa.intellij.text-reader-sider-tool'
+version '2021.11.05'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree('lib') { include '*.jar' }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.0'
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version = '2021.2.3'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}

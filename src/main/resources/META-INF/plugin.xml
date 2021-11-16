@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSiderTool for intellij</name>
-  <version>2021.07.01</version>
+  <version>2021.11.16</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -11,13 +11,57 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      <h3>2019.06.17<h3>
+      <h3>2021.11.16</h3>
       <ul>
-          <li>only read text</li>
+          <li>nothing</li>
       </ul>
       <hr/>
 
-      <h3>2019.08.21<h3>
+      <h3>2021.07.01</h3>
+      <ul>
+          <li>click chapter clear chapter title list filter</li>
+          <li>detect file charset</li>
+      </ul>
+      <hr/>
+
+      <h3>2021.06.24</h3>
+      <ul>
+          <li>clear chapter search text</li>
+      </ul>
+      <hr/>
+
+      <h3>2021.06.04</h3>
+      <ul>
+          <li>chapter search</li>
+      </ul>
+      <hr/>
+
+      <h3>2021.06.03</h3>
+      <ul>
+          <li>Setting: modify paragraph space</li>
+      </ul>
+      <hr/>
+
+      <h3>2021.06.01</h3>
+      <ul>
+          <li>format chapter</li>
+          <li>content before first chapter</li>
+      </ul>
+      <hr/>
+
+      <h3>2020.11.25</h3>
+      <ul>
+          <li>Clear Button: clear StateService data, chapter list and chapter content</li>
+      </ul>
+      <hr/>
+
+      <h3>2020.10.13</h3>
+      <ul>
+          <li>Setting: modify JPane to JScrollPane, toot window height lower</li>
+      </ul>
+      <hr/>
+
+      <h3>2019.08.21</h3>
       <ul>
           <li>more font style</li>
           <li>find chapter by regex</li>
@@ -25,49 +69,12 @@
       </ul>
       <hr/>
 
-      <h3>2020.10.13<h3>
+      <h3>2019.06.17</h3>
       <ul>
-          <li>Setting: modify JPane to JScrollPane, toot window height lower</li>
+          <li>only read text</li>
       </ul>
       <hr/>
 
-      <h3>2020.11.25<h3>
-      <ul>
-          <li>Clear Button: clear StateService data, chapter list and chapter content</li>
-      </ul>
-      <hr/>
-
-      <h3>2021.06.01<h3>
-      <ul>
-          <li>format chapter</li>
-          <li>content before first chapter</li>
-      </ul>
-      <hr/>
-
-      <h3>2021.06.03<h3>
-      <ul>
-          <li>Setting: modify paragraph space</li>
-      </ul>
-      <hr/>
-
-      <h3>2021.06.04<h3>
-      <ul>
-          <li>chapter search</li>
-      </ul>
-      <hr/>
-
-      <h3>2021.06.24<h3>
-      <ul>
-          <li>clear chapter search text</li>
-      </ul>
-      <hr/>
-
-      <h3>2021.07.01<h3>
-      <ul>
-          <li>click chapter clear chapter title list filter</li>
-          <li>detect file charset</li>
-      </ul>
-      <hr/>
     ]]>
   </change-notes>
 
@@ -80,9 +87,10 @@
 
 
   <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
+      <!-- Add your extensions here -->
       <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
-      <toolWindow id="TextReaderTool" anchor="left" factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"/>
+      <toolWindow id="textReaderToolWindow" anchor="bottom" secondary="true" factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"/>
+      <notificationGroup id="com.muedsa.intellij.textReader.notify" displayType="BALLOON"/>
   </extensions>
 
   <actions>
