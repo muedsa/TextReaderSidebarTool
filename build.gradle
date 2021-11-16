@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.muedsa.intellij.text-reader-sider-tool'
-version '2021.11.05'
+version '2021.11.16'
 
 repositories {
     mavenCentral()
