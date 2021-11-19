@@ -3,8 +3,8 @@ plugins {
     id 'java'
 }
 
-group 'com.muedsa.intellij.text-reader-sider-tool'
-version '2021.11.16'
+group 'com.muedsa.intellij.text-reader-sidebar-tool'
+version '2021.11.19'
 
 repositories {
     mavenCentral()

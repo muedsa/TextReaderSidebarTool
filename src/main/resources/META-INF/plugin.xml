@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
-  <name>TextReaderSiderTool for intellij</name>
-  <version>2021.11.16</version>
+  <name>TextReaderSidebarTool</name>
+  <version>2021.11.19</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -11,6 +11,14 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <h3>2021.11.19</h3>
+      <ul>
+          <li>update name: TextReaderSidebarTool</li>
+          <li>add tool window icon</li>
+      </ul>
+      <hr/>
+
+
       <h3>2021.11.16</h3>
       <ul>
           <li>nothing</li>
@@ -89,7 +97,11 @@
   <extensions defaultExtensionNs="com.intellij">
       <!-- Add your extensions here -->
       <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
-      <toolWindow id="textReaderToolWindow" anchor="bottom" secondary="true" factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"/>
+      <toolWindow id="TextReaderToolWindow"
+                  anchor="bottom"
+                  secondary="true"
+                  factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"
+                  icon="TextReaderSidebarToolIcons.BOOK_DEAD"/>
       <notificationGroup id="com.muedsa.intellij.textReader.notify" displayType="BALLOON"/>
   </extensions>
 
