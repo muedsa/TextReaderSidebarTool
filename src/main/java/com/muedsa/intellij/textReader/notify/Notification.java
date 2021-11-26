@@ -12,4 +12,10 @@ public class Notification {
                 .setTitle(title)
                 .notify(project);
     }
+
+    public static void sendHiddenNotify(Project project, String content, NotificationType type){
+        NotificationGroupManager.getInstance().getNotificationGroup("com.muedsa.intellij.textReader.hiddenNotify")
+                .createNotification(content, type)
+                .notify(project);
+    }
 }

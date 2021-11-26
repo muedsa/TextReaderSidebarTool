@@ -31,6 +31,9 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 public class ReaderWindow {
+    private final Project project;
+    private final ToolWindow toolWindow;
+
     private JPanel readerPanel;
     private JBList<Chapter> titleList;
     private JButton fileButton;
@@ -51,15 +54,16 @@ public class ReaderWindow {
     private JButton clearButton;
     private JSpinner paragraphSpaceSpinner;
     private JTextField searchTextField;
-
-    private Project project;
-    private ToolWindow toolWindow;
+    private JSpinner lineSizeSpinner;
 
     private TextFile textFile;
 
     private TextReaderStateService textReaderStateService;
 
     private static Vector<Chapter> CHAPTER_LIST = new Vector<>(0);
+
+    private Integer positionInChapter = 0;
+    private String noBlankChapterText;
 
     public ReaderWindow(Project project, ToolWindow toolWindow) {
         this.project = project;
@@ -68,6 +72,11 @@ public class ReaderWindow {
         createUIComponents();
         init();
         updateRegex();
+        ReaderWindowHolder.put(project, this);
+    }
+
+    public JPanel getContent(){
+        return readerPanel;
     }
 
     private void createUIComponents(){
@@ -233,14 +242,8 @@ public class ReaderWindow {
         nextButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int count = titleList.getItemsCount();
-                int index = titleList.getSelectedIndex() + 1;
-                if(index + 1 <= count){
-                    titleList.setSelectedIndex(index);
-                    setTextContent();
-                }
+                nextChapter();
             }
-
         });
 
         //上一章
@@ -254,6 +257,10 @@ public class ReaderWindow {
                 }
             }
         });
+
+        //每行字数
+        SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(15, 0, 100, 1);
+        lineSizeSpinner.setModel(lineSizeSpinnerModel);
     }
 
     private void init(){
@@ -337,10 +344,6 @@ public class ReaderWindow {
         setTextContent();
     }
 
-    public JPanel getContent(){
-        return readerPanel;
-    }
-
     private void setTextContent(){
         Chapter chapter = titleList.getSelectedValue();
         if(chapter != null){
@@ -353,6 +356,7 @@ public class ReaderWindow {
                 sendNotify("文件读取错误", e.getLocalizedMessage(), NotificationType.ERROR);
             }
             textContent.setText(text);
+            noBlankChapterText = text.replaceAll("\\s*", "");
             textContent.setCaretPosition(0);
         }
     }
@@ -361,4 +365,40 @@ public class ReaderWindow {
         Notification.sendNotify(project, title, content, type);
     }
 
+    public String nextLine(){
+        if(toolWindow.isAvailable()){
+            int lineSize = (int)lineSizeSpinner.getValue();
+            if(lineSize > 0){
+                if(StringUtils.isEmpty(noBlankChapterText) || positionInChapter > noBlankChapterText.length()){
+                    if(nextChapter()){
+                        positionInChapter = 0;
+                        noBlankChapterText = textContent.getText();
+                    }else{
+                        return "end!";
+                    }
+                }
+                String line = StringUtils.mid(noBlankChapterText, positionInChapter, lineSize);
+                positionInChapter += lineSize;
+                if(StringUtils.isAllBlank(line)){
+                    line = nextLine();
+                }
+                return line;
+            }
+            return ">.< 0?";
+        }else{
+            return "正在初始化~~";
+        }
+    }
+
+    private boolean nextChapter(){
+        int count = titleList.getItemsCount();
+        int index = titleList.getSelectedIndex() + 1;
+        if(index + 1 <= count){
+            titleList.setSelectedIndex(index);
+            setTextContent();
+            return true;
+        }else{
+            return false;
+        }
+    }
 }

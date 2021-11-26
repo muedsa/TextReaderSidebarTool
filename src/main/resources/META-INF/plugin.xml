@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSidebarTool</name>
-  <version>2021.11.19</version>
+  <version>2021.11.26</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -11,6 +11,13 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <h3>2021.11.26</h3>
+      <ul>
+          <li>hidden line reader</li>
+      </ul>
+      <hr/>
+
+
       <h3>2021.11.19</h3>
       <ul>
           <li>update name: TextReaderSidebarTool</li>
@@ -103,10 +110,15 @@
                   factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"
                   icon="TextReaderSidebarToolIcons.BOOK_DEAD"/>
       <notificationGroup id="com.muedsa.intellij.textReader.notify" displayType="BALLOON"/>
+      <notificationGroup id="com.muedsa.intellij.textReader.hiddenNotify" displayType="NONE"/>
   </extensions>
 
   <actions>
-    <!-- Add your actions here -->
+      <action id="com.muedsa.intellij.textReader.nextLineAction"
+              class="com.muedsa.intellij.textReader.action.NextLineAction" text="NextLineAction">
+          <add-to-group group-id="ToolsMenu" anchor="last"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
+      </action>
   </actions>
 
 </idea-plugin>
