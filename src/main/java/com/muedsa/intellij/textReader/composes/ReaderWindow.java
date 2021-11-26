@@ -358,6 +358,7 @@ public class ReaderWindow {
             textContent.setText(text);
             noBlankChapterText = text.replaceAll("\\s*", "");
             textContent.setCaretPosition(0);
+            positionInChapter = 0;
         }
     }
 
@@ -370,12 +371,7 @@ public class ReaderWindow {
             int lineSize = (int)lineSizeSpinner.getValue();
             if(lineSize > 0){
                 if(StringUtils.isEmpty(noBlankChapterText) || positionInChapter > noBlankChapterText.length()){
-                    if(nextChapter()){
-                        positionInChapter = 0;
-                        noBlankChapterText = textContent.getText();
-                    }else{
-                        return "end!";
-                    }
+                    nextChapter();
                 }
                 String line = StringUtils.mid(noBlankChapterText, positionInChapter, lineSize);
                 positionInChapter += lineSize;
@@ -390,15 +386,12 @@ public class ReaderWindow {
         }
     }
 
-    private boolean nextChapter(){
+    private void nextChapter(){
         int count = titleList.getItemsCount();
         int index = titleList.getSelectedIndex() + 1;
         if(index + 1 <= count){
             titleList.setSelectedIndex(index);
             setTextContent();
-            return true;
-        }else{
-            return false;
         }
     }
 }
