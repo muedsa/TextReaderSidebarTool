@@ -10,7 +10,7 @@ Working yet
 
 Install: [#1](https://github.com/MUedsa/TextReaderSiderTool/issues/1)
 
-#Feature
+## Feature
 - [x] 智障分章读
 - [x] 搜索标题
 - [x] 按行读取（以通知的方式显示在工具栏），默认ALT+E下一行、ALT+A上一行、ALT+S清空
