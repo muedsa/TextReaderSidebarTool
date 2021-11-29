@@ -173,7 +173,7 @@ public class ReaderWindow {
 
         searchTextField.getDocument().addDocumentListener(new DocumentAdapter() {
 
-            private final List<searchThread> threadList = new ArrayList<>();
+            private final List<searchThread> threadList = new Vector<>();
 
             private void search(String searchText){
                 if(StringUtils.isEmpty(searchText)){
@@ -190,7 +190,11 @@ public class ReaderWindow {
 
             @Override
             protected void textChanged(@NotNull DocumentEvent documentEvent){
-                threadList.forEach(searchThread::cancel);
+                threadList.forEach(i -> {
+                    if(i != null){
+                        i.cancel();
+                    }
+                });
                 String searchText = searchTextField.getText();
                 searchThread thread = new searchThread(searchText);
                 thread.start();
@@ -367,29 +371,59 @@ public class ReaderWindow {
     }
 
     public String nextLine(){
+        String line = "正在初始化~~";
         if(toolWindow.isAvailable()){
             int lineSize = (int)lineSizeSpinner.getValue();
             if(lineSize > 0){
                 if(StringUtils.isEmpty(noBlankChapterText) || positionInChapter > noBlankChapterText.length()){
                     nextChapter();
                 }
-                String line = StringUtils.mid(noBlankChapterText, positionInChapter, lineSize);
+                line = StringUtils.mid(noBlankChapterText, positionInChapter, lineSize);
                 positionInChapter += lineSize;
                 if(StringUtils.isAllBlank(line)){
                     line = nextLine();
                 }
-                return line;
+            }else{
+                line = ">.< 0?";
             }
-            return ">.< 0?";
-        }else{
-            return "正在初始化~~";
+
         }
+        return line;
+    }
+
+    public String previousLine(){
+        String line = "正在初始化~~";
+        if(toolWindow.isAvailable()){
+            int lineSize = (int)lineSizeSpinner.getValue();
+            if(lineSize > 0){
+                if(positionInChapter == 0){
+                    previousChapter();
+                }else{
+                    positionInChapter -= lineSize * 2;
+                    if(positionInChapter < 0){
+                        positionInChapter = 0;
+                    }
+                }
+                line = nextLine();
+            }else{
+                line = ">.< 0?";
+            }
+        }
+        return line;
     }
 
     private void nextChapter(){
         int count = titleList.getItemsCount();
         int index = titleList.getSelectedIndex() + 1;
         if(index + 1 <= count){
+            titleList.setSelectedIndex(index);
+            setTextContent();
+        }
+    }
+
+    private void previousChapter(){
+        int index = titleList.getSelectedIndex() - 1;
+        if(index >= 0){
             titleList.setSelectedIndex(index);
             setTextContent();
         }

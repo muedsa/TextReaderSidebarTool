@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSidebarTool</name>
-  <version>2021.11.26</version>
+  <version>2021.11.29</version>
   <vendor email="muedsa@cattery.cn" url="http://www.muedsa.com">MUEDSA</vendor>
 
   <description><![CDATA[
@@ -11,6 +11,14 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <h3>2021.11.29</h3>
+      <ul>
+          <li>PreviousLineAction</li>
+          <li>EmptyLineAction</li>
+          <li>fix: search npe</li>
+      </ul>
+      <hr/>
+
       <h3>2021.11.26</h3>
       <ul>
           <li>hidden line reader</li>
@@ -102,23 +110,36 @@
 
 
   <extensions defaultExtensionNs="com.intellij">
-      <!-- Add your extensions here -->
-      <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
-      <toolWindow id="TextReaderToolWindow"
+    <!-- Add your extensions here -->
+    <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
+    <toolWindow id="TextReaderToolWindow"
                   anchor="bottom"
                   secondary="true"
                   factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"
                   icon="TextReaderSidebarToolIcons.BOOK_DEAD"/>
-      <notificationGroup id="com.muedsa.intellij.textReader.notify" displayType="BALLOON"/>
-      <notificationGroup id="com.muedsa.intellij.textReader.hiddenNotify" displayType="NONE"/>
+    <notificationGroup id="com.muedsa.intellij.textReader.notify" displayType="BALLOON"/>
+    <notificationGroup id="com.muedsa.intellij.textReader.hiddenNotify" displayType="NONE"/>
   </extensions>
 
   <actions>
+    <group id="com.muedsa.intellij.textReader.groupAction" text="Text Reader" icon="TextReaderSidebarToolIcons.BOOK_DEAD">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
       <action id="com.muedsa.intellij.textReader.nextLineAction"
-              class="com.muedsa.intellij.textReader.action.NextLineAction" text="NextLineAction">
-          <add-to-group group-id="ToolsMenu" anchor="last"/>
-          <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
+              class="com.muedsa.intellij.textReader.action.NextLineAction"
+              text="NextLine">
+        <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
       </action>
+      <action id="com.muedsa.intellij.textReader.previousLineAction"
+              class="com.muedsa.intellij.textReader.action.PreviousLineAction"
+              text="PreviousLine">
+        <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+      </action>
+      <action id="com.muedsa.intellij.textReader.emptyLineAction"
+              class="com.muedsa.intellij.textReader.action.EmptyLineAction"
+              text="EmptyLine">
+        <keyboard-shortcut keymap="$default" first-keystroke="alt S"/>
+      </action>
+    </group>
   </actions>
 
 </idea-plugin>
