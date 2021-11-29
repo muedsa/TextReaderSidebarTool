@@ -122,7 +122,10 @@
   </extensions>
 
   <actions>
-    <group id="com.muedsa.intellij.textReader.groupAction" text="Text Reader" icon="TextReaderSidebarToolIcons.BOOK_DEAD">
+    <group id="com.muedsa.intellij.textReader.groupAction"
+           text="Text Reader"
+           icon="TextReaderSidebarToolIcons.BOOK_DEAD"
+           popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <action id="com.muedsa.intellij.textReader.nextLineAction"
               class="com.muedsa.intellij.textReader.action.NextLineAction"
