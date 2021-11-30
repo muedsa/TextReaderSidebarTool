@@ -263,7 +263,7 @@ public class ReaderWindow {
         });
 
         //每行字数
-        SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(15, 0, 100, 1);
+        SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(30, 0, 100, 1);
         lineSizeSpinner.setModel(lineSizeSpinnerModel);
     }
 
@@ -360,7 +360,7 @@ public class ReaderWindow {
                 sendNotify("文件读取错误", e.getLocalizedMessage(), NotificationType.ERROR);
             }
             textContent.setText(text);
-            noBlankChapterText = text.replaceAll("\\s*", "");
+            noBlankChapterText = text.replaceFirst("\n", "##").replaceAll("\\s*", "");
             textContent.setCaretPosition(0);
             positionInChapter = 0;
         }
