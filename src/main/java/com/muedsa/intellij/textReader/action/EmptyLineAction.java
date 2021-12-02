@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 public class EmptyLineAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        Notification.sendHiddenNotify(e.getProject(), "....................................", NotificationType.INFORMATION);
+        int i = 0;
+        while (i < 40){
+            Notification.sendHiddenNotify(e.getProject(), ".", NotificationType.INFORMATION);
+            i++;
+        }
     }
 }
