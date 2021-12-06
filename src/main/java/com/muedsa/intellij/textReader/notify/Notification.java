@@ -14,7 +14,7 @@ public class Notification {
 
     private static final NotificationGroup HIDDEN_NOTIFY_GROUP = new NotificationGroup(
             "com.muedsa.intellij.textReader.hiddenNotify",
-            NotificationDisplayType.BALLOON,
+            NotificationDisplayType.NONE,
             true);
 
     public static void sendNotify(Project project, String title, String content, NotificationType type){
