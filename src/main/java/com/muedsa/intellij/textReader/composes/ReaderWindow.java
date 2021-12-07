@@ -348,22 +348,25 @@ public class ReaderWindow {
         setTextContent();
     }
 
-    private void setTextContent(){
+    private boolean setTextContent(){
         Chapter chapter = titleList.getSelectedValue();
+        boolean flag = false;
         if(chapter != null){
             String text = "";
             try{
                 text = ChapterUtil.formatChapterContent(textFile, chapter);
+                textContent.setText(text);
+                noBlankChapterText = text.replaceFirst("\n", "##").replaceAll("\\s*", "");
+                textContent.setCaretPosition(0);
+                positionInChapter = 0;
+                flag = true;
             }
             catch (IOException e){
                 e.printStackTrace();
                 sendNotify("文件读取错误", e.getLocalizedMessage(), NotificationType.ERROR);
             }
-            textContent.setText(text);
-            noBlankChapterText = text.replaceFirst("\n", "##").replaceAll("\\s*", "");
-            textContent.setCaretPosition(0);
-            positionInChapter = 0;
         }
+        return flag;
     }
 
     private void sendNotify(String title, String content, NotificationType type){
@@ -376,7 +379,10 @@ public class ReaderWindow {
             int lineSize = (int)lineSizeSpinner.getValue();
             if(lineSize > 0){
                 if(StringUtils.isEmpty(noBlankChapterText) || positionInChapter > noBlankChapterText.length()){
-                    nextChapter();
+                    if(!nextChapter()){
+                        line = "读取下一章失败!";
+                        return line;
+                    }
                 }
                 line = StringUtils.mid(noBlankChapterText, positionInChapter, lineSize);
                 positionInChapter += lineSize;
@@ -396,8 +402,13 @@ public class ReaderWindow {
         if(toolWindow.isAvailable()){
             int lineSize = (int)lineSizeSpinner.getValue();
             if(lineSize > 0){
-                if(positionInChapter == 0){
-                    previousChapter();
+                if(positionInChapter - lineSize == 0){
+                    if(!previousChapter()){
+                        line = "读取上一章失败!";
+                        positionInChapter = 0;
+                        return line;
+                    }
+                    positionInChapter = noBlankChapterText.length() - lineSize;
                 }else{
                     positionInChapter -= lineSize * 2;
                     if(positionInChapter < 0){
@@ -412,20 +423,28 @@ public class ReaderWindow {
         return line;
     }
 
-    private void nextChapter(){
+    private boolean nextChapter(){
+        boolean flag = false;
         int count = titleList.getItemsCount();
         int index = titleList.getSelectedIndex() + 1;
         if(index + 1 <= count){
             titleList.setSelectedIndex(index);
-            setTextContent();
+            flag = setTextContent();
         }
+        return flag;
     }
 
-    private void previousChapter(){
+    private boolean previousChapter(){
+        boolean flag = false;
         int index = titleList.getSelectedIndex() - 1;
         if(index >= 0){
             titleList.setSelectedIndex(index);
-            setTextContent();
+            flag = setTextContent();
         }
+        return flag;
+    }
+
+    public boolean isReadyLineAction(){
+        return !titleList.isEmpty();
     }
 }

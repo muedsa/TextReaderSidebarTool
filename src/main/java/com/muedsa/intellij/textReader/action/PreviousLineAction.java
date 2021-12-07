@@ -15,7 +15,11 @@ public class PreviousLineAction extends AnAction {
         if(readerWindow == null){
             Notification.sendHiddenNotify(e.getProject(), "未初始化ToolWindow, 请点击工具栏打开一次窗口", NotificationType.INFORMATION);
         }else{
-            Notification.sendHiddenNotify(e.getProject(), readerWindow.previousLine(), NotificationType.INFORMATION);
+            if(readerWindow.isReadyLineAction()){
+                Notification.sendHiddenNotify(e.getProject(), readerWindow.previousLine(), NotificationType.INFORMATION);
+            }else{
+                Notification.sendHiddenNotify(e.getProject(), "请选择文件载入或清除筛选项", NotificationType.WARNING);
+            }
         }
     }
 }
