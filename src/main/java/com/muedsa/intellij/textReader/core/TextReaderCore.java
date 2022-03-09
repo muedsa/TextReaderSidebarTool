@@ -23,7 +23,7 @@ public class TextReaderCore {
     private Vector<Chapter> chapterList = new Vector<>(0);
     private int chapterIndex;
 
-    private String noBlankChapterText;
+    private String noBlankChapterText = "";
     private int positionInChapter = 0;
 
     public void initStateService(){
@@ -47,6 +47,8 @@ public class TextReaderCore {
         textFile = new TextFile(file);
         chapterList = ChapterUtil.getChapters(textFile, maxLineSize, pattern);
         chapterIndex = 0;
+        noBlankChapterText = "";
+        positionInChapter = 0;
         saveState();
         eventManage.notifyEvent(new ChapterChangeEvent(chapterList.get(chapterIndex)));
     }
@@ -66,7 +68,7 @@ public class TextReaderCore {
 
     public Chapter getChapter(){
         Chapter chapter = null;
-        if(chapterIndex > 0 && chapterIndex < chapterList.size()){
+        if(chapterIndex >= 0 && chapterIndex < chapterList.size()){
             chapter = chapterList.get(chapterIndex);
         }
         return chapter;
@@ -96,12 +98,9 @@ public class TextReaderCore {
         String text = "";
         Chapter chapter = getChapter();
         if(chapter != null){
-            long startTime = System.currentTimeMillis();
             text = ChapterUtil.formatChapterContent(textFile, chapter);
             noBlankChapterText = text.replaceFirst("\n", "##").replaceAll("\\s*", "");
             positionInChapter = 0;
-            long endTime = System.currentTimeMillis();
-            System.out.println("time:" + (endTime - startTime));
         }
         return text;
     }
