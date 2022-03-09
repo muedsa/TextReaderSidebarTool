@@ -5,7 +5,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import com.muedsa.intellij.textReader.Chapter;
+import com.muedsa.intellij.textReader.core.Chapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Vector;

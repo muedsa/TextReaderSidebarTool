@@ -284,7 +284,7 @@
                           <text value="解析限制"/>
                         </properties>
                       </component>
-                      <component id="23897" class="javax.swing.JSpinner" binding="maxLineSizeSpinner">
+                      <component id="23897" class="javax.swing.JSpinner" binding="maxTitleLineSizeSpinner">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -439,7 +439,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="4d75d" class="javax.swing.JSpinner" binding="lineSizeSpinner">
+                      <component id="4d75d" class="javax.swing.JSpinner" binding="readerLineSizeSpinner">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>

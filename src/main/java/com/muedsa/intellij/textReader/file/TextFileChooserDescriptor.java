@@ -10,10 +10,6 @@ public class TextFileChooserDescriptor extends FileChooserDescriptor {
 
     @Override
     public boolean isFileSelectable(VirtualFile file) {
-        boolean flag = false;
-        if(file != null && file.getExtension() != null &&"txt".equals(file.getExtension().toLowerCase())){
-            flag = true;
-        }
-        return flag;
+        return file != null && file.getExtension() != null && "txt".equalsIgnoreCase(file.getExtension());
     }
 }

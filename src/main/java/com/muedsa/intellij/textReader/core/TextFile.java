@@ -1,4 +1,4 @@
-package com.muedsa.intellij.textReader;
+package com.muedsa.intellij.textReader.core;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import info.monitorenter.cpdetector.io.ASCIIDetector;
@@ -42,27 +42,11 @@ public class TextFile {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
     public InputStream getInputStream() {
         return inputStream;
     }
 
-    public void setInputStream(InputStream inputStream) {
-        this.inputStream = inputStream;
-    }
-
     public Charset getCharset() {
         return charset;
-    }
-
-    public void setCharset(Charset charset) {
-        this.charset = charset;
-    }
-
-    public void readLine(){
-
     }
 }

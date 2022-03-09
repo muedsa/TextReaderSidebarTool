@@ -1,4 +1,4 @@
-package com.muedsa.intellij.textReader;
+package com.muedsa.intellij.textReader.core;
 
 public class Chapter {
     private int startOffset;

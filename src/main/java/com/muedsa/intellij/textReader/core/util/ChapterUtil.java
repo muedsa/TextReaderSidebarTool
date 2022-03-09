@@ -1,13 +1,16 @@
-package com.muedsa.intellij.textReader.util;
+package com.muedsa.intellij.textReader.core.util;
 
-import com.muedsa.intellij.textReader.Chapter;
-import com.muedsa.intellij.textReader.TextFile;
+import com.muedsa.intellij.textReader.core.Chapter;
+import com.muedsa.intellij.textReader.core.TextFile;
+import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.io.MyBufferedReader;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,9 +22,7 @@ public class ChapterUtil {
     public static final char HALF_WIDTH_SPACE = ' ';
     public static final char FULL_WIDTH_SPACE = '　';
 
-    public static int CONFIG_PARAGRAPH_SPACE = 1;
-
-    public static Vector<Chapter> getChapters(TextFile textFile, int maxLineSize, Pattern pattern) throws Exception {
+    public static Vector<Chapter> getChapters(TextFile textFile, int maxLineSize, Pattern pattern) throws IOException {
         Vector<Chapter> list = new Vector<>();
         int offset = 0;
         InputStreamReader reader = new InputStreamReader(textFile.getInputStream(), textFile.getCharset());
@@ -74,7 +75,7 @@ public class ChapterUtil {
                 String newParagraph = trim(paragraph);
                 formatContentBuilder.append(newParagraph);
                 int i = 0;
-                while(CONFIG_PARAGRAPH_SPACE + 1 > 0 && i < CONFIG_PARAGRAPH_SPACE + 1){
+                while(TextReaderConfig.getParagraphSpace() + 1 > 0 && i < TextReaderConfig.getParagraphSpace() + 1){
                     formatContentBuilder.append(LF);
                     i++;
                 }
