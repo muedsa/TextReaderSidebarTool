@@ -76,6 +76,7 @@ public class ReaderWindow implements Disposable {
         if(textReaderCore.getChapters().isEmpty()){
             this.searchTextField.setEnabled(true);
         }
+        ReaderWindowHolder.put(project, this);
     }
 
     private void createUIComponents(){
