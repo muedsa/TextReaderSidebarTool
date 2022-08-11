@@ -1,6 +1,6 @@
 # TextReaderSideBarTool
 
-[![API](https://img.shields.io/badge/IC-2020.1%2B-yellow.svg?labelColor=27282c&style=flat&logo=jetBrains&logoColor=black)](https://www.jetbrains.com)
+[![API](https://img.shields.io/badge/IC-2020.1%2B-yellow.svg?labelColor=white&style=flat&logo=jetBrains&logoColor=black)](https://www.jetbrains.com)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/MUedsa/TextReaderSiderTool?logo=github)](https://github.com/MUedsa/TextReaderSiderTool/commits/master)
 [![CodeFactor](https://www.codefactor.io/repository/github/muedsa/textreadersidertool/badge)](https://www.codefactor.io/repository/github/muedsa/textreadersidertool)
 [![GitHub Releases](https://img.shields.io/github/downloads/MUedsa/TextReaderSiderTool/total?logo=github)](https://github.com/MUedsa/TextReaderSiderTool/releases)
