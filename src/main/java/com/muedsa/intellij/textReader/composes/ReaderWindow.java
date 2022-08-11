@@ -1,10 +1,10 @@
 package com.muedsa.intellij.textReader.composes;
 
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
-import com.intellij.openapi.actionSystem.impl.ActionManagerImpl;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.DocumentAdapter;
@@ -12,14 +12,11 @@ import com.intellij.ui.components.JBList;
 import com.muedsa.intellij.textReader.core.Chapter;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
-import com.muedsa.intellij.textReader.core.event.ChapterChangeEvent;
-import com.muedsa.intellij.textReader.core.event.ChaptersClearEvent;
-import com.muedsa.intellij.textReader.core.event.ConfigChangeEvent;
-import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
+import com.muedsa.intellij.textReader.core.event.*;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.notify.Notification;
+import com.muedsa.intellij.textReader.util.ReaderLineUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.action.ActionManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -36,10 +33,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-public class ReaderWindow {
+public class ReaderWindow implements Disposable {
     private final Project project;
     private final ToolWindow toolWindow;
-
     private JPanel readerPanel;
     private JBList<Chapter> titleList;
     private JButton fileButton;
@@ -61,6 +57,9 @@ public class ReaderWindow {
     private JSpinner paragraphSpaceSpinner;
     private JTextField searchTextField;
     private JSpinner readerLineSizeSpinner;
+    private JRadioButton atHiddenNotifyRadioButton;
+    private JRadioButton atStatusBarRadioButton;
+    private ButtonGroup showReaderLineAtRadioButtonGroup;
 
     private final TextReaderCore textReaderCore;
 
@@ -69,12 +68,10 @@ public class ReaderWindow {
         this.project = project;
         this.toolWindow = toolWindow;
         this.textReaderCore = TextReaderCore.getInstance();
-        toolWindow.setTitle("TextReader");
         createUIComponents();
         init();
         updateRegex();
         eventRegister();
-        ReaderWindowHolder.put(project, this);
         textReaderCore.initStateService();
         if(textReaderCore.getChapters().isEmpty()){
             this.searchTextField.setEnabled(true);
@@ -90,7 +87,7 @@ public class ReaderWindow {
         fontFamilyEl.setModel(comboBoxModel);
         fontFamilyEl.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_FAMILY, e.getItem(), eventManage);
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_FAMILY, e.getItem(), eventManage, ReaderWindow.this);
             }
         });
         int index = Arrays.binarySearch(fontFamilyNames, TextReaderConfig.getFontFamily());
@@ -101,32 +98,49 @@ public class ReaderWindow {
         //字体大小
         SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFontSize(), 0, 100, 1);
         fontSizeSpinner.setModel(fontSizeSpinnerModel);
-        fontSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_SIZE, fontSizeSpinner.getValue(), eventManage));
+        fontSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_SIZE,
+                fontSizeSpinner.getValue(), eventManage, ReaderWindow.this));
 
         //字体行间距
         SpinnerModel lineSpaceSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getLineSpace(), 0, 2.5, 0.1);
         lineSpaceSpinner.setModel(lineSpaceSpinnerModel);
-        lineSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.LINE_SPACE, lineSpaceSpinner.getValue(), eventManage));
+        lineSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.LINE_SPACE,
+                lineSpaceSpinner.getValue(), eventManage, ReaderWindow.this));
 
         //首行缩进
         SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFirstLineIndent(), 0, 4, 1);
         firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
-        firstLineIndentSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FIRST_LINE_INDENT, firstLineIndentSpinner.getValue(), eventManage));
+        firstLineIndentSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FIRST_LINE_INDENT,
+                firstLineIndentSpinner.getValue(), eventManage, ReaderWindow.this));
 
         //段落间隔
         SpinnerModel paragraphSpaceSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getParagraphSpace(), 0, 4, 1);
         paragraphSpaceSpinner.setModel(paragraphSpaceSpinnerModel);
-        paragraphSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.PARAGRAPH_SPACE, paragraphSpaceSpinner.getValue(), eventManage));
+        paragraphSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.PARAGRAPH_SPACE,
+                paragraphSpaceSpinner.getValue(), eventManage, ReaderWindow.this));
 
         //标题解析最大字数限制设置
         SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getMaxTitleLineSize(), 1, 200, 1);
         maxTitleLineSizeSpinner.setModel(maxLineSizeSpinnerModel);
-        maxTitleLineSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.MAX_TITLE_LINE_SIZE, maxTitleLineSizeSpinner.getValue(), eventManage));
+        maxTitleLineSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.MAX_TITLE_LINE_SIZE,
+                maxTitleLineSizeSpinner.getValue(), eventManage, ReaderWindow.this));
 
         //每行字数
         SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineSize(), 0, 100, 1);
         readerLineSizeSpinner.setModel(lineSizeSpinnerModel);
-        lineSizeSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_SIZE, readerLineSizeSpinner.getValue(), eventManage));
+        lineSizeSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_SIZE,
+                readerLineSizeSpinner.getValue(), eventManage, ReaderWindow.this));
+
+        //按行读取时展示的位置
+        showReaderLineAtRadioButtonGroup = new ButtonGroup();
+        showReaderLineAtRadioButtonGroup.add(atHiddenNotifyRadioButton);
+        showReaderLineAtRadioButtonGroup.add(atStatusBarRadioButton);
+        showReaderLineAtRadioButtonGroup.setSelected(TextReaderConfig.isShowReaderLintAtStatusBar()?
+                atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
+        ActionListener actionListener = e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR,
+                showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel()), eventManage, ReaderWindow.this);
+        atHiddenNotifyRadioButton.addActionListener(actionListener);
+        atStatusBarRadioButton.addActionListener(actionListener);
 
         //添加文件
         fileButton.addActionListener(e -> {
@@ -141,22 +155,22 @@ public class ReaderWindow {
                         String fileCharset;
                         filePath = textReaderCore.getTextFile().getFilePath();
                         fileCharset = textReaderCore.getTextFile().getCharset().displayName();
-                        sendNotify("加载成功", String.format("%s<br><em>%s</em> 共%d章", filePath, fileCharset, textReaderCore.getChapters().size()), NotificationType.INFORMATION);
+                        sendNotify(Notification.TITLE_LOAD_FILE_SUCCESS, String.format("%s<br><em>%s</em> 共%d章", filePath, fileCharset, textReaderCore.getChapters().size()), NotificationType.INFORMATION);
                     }else{
-                        sendNotify("加载文件错误", "........", NotificationType.ERROR);
+                        sendNotify(Notification.TITLE_LOAD_FILE_ERROR, "........", NotificationType.ERROR);
                     }
                 }
                 catch (PatternSyntaxException error){
                     error.printStackTrace();
-                    sendNotify("正则错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    sendNotify(Notification.TITLE_LOAD_FILE_REGEX_ERROR, error.getLocalizedMessage(), NotificationType.ERROR);
                 }
                 catch (IOException error){
                     error.printStackTrace();
-                    sendNotify("文件读取错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    sendNotify(Notification.TITLE_READ_CHAPTER_ERROR, error.getLocalizedMessage(), NotificationType.ERROR);
                 }
                 catch (Exception error){
                     error.printStackTrace();
-                    sendNotify("其他错误", error.getLocalizedMessage(), NotificationType.ERROR);
+                    sendNotify(Notification.TITLE_ERROR, error.getLocalizedMessage(), NotificationType.ERROR);
                 }
             }
         });
@@ -256,7 +270,7 @@ public class ReaderWindow {
 
     private void eventRegister(){
         TextReaderEventManage eventManage = textReaderCore.getEventManage();
-        eventManage.addListener(ChapterChangeEvent.EVENT_ID, event -> {
+        TextReaderEventListener chapterChangeEventListener = event -> {
             Chapter chapter = (Chapter) event.getData();
             titleList.setListData(textReaderCore.getChapters());
             if(chapter != null){
@@ -268,51 +282,61 @@ public class ReaderWindow {
                 searchTextField.setEnabled(true);
             }
             setTextContent();
-        });
-        eventManage.addListener(ChaptersClearEvent.EVENT_ID, event -> {
+        };
+        TextReaderEventListener chaptersClearEventListener = event -> {
             titleList.setListData(textReaderCore.getChapters());
             titleList.clearSelection();
             textContent.setText("");
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            int i = 0;
-            while (i < 40){
-                Notification.sendHiddenNotify(project, ".", NotificationType.INFORMATION);
-                i++;
-            }
-        });
-        eventManage.addListener(ConfigChangeEvent.EVENT_ID, event -> {
+            ReaderLineUtil.clear(project);
+        };
+        TextReaderEventListener configChangeEventListener = event -> {
             ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
+            boolean notSelf = Objects.equals(ReaderWindow.this, event.getTag());
             switch (configChangeEvent.getConfigKey()){
                 case FONT_FAMILY:
-                    fontFamilyEl.getModel().setSelectedItem(event.getData());
+                    if(notSelf) fontFamilyEl.getModel().setSelectedItem(event.getData());
                     updateFontFamily();
                     break;
                 case FONT_SIZE:
-                    fontSizeSpinner.setValue(event.getData());
+                    if(notSelf) fontSizeSpinner.setValue(event.getData());
                     updateFontSize();
                     break;
                 case LINE_SPACE:
-                    lineSpaceSpinner.setValue(event.getData());
+                    if(notSelf) lineSpaceSpinner.setValue(event.getData());
                     updateLineSpace();
                     break;
                 case FIRST_LINE_INDENT:
-                    firstLineIndentSpinner.setValue(event.getData());
+                    if(notSelf) firstLineIndentSpinner.setValue(event.getData());
                     updateFirstLineIndent();
                     break;
                 case PARAGRAPH_SPACE:
-                    paragraphSpaceSpinner.setValue(event.getData());
+                    if(notSelf) paragraphSpaceSpinner.setValue(event.getData());
                     setTextContent();
                     break;
                 case MAX_TITLE_LINE_SIZE:
-                    maxTitleLineSizeSpinner.setValue(event.getData());
+                    if(notSelf) maxTitleLineSizeSpinner.setValue(event.getData());
                     break;
                 case READER_LINE_SIZE:
-                    readerLineSizeSpinner.setValue(event.getData());
+                    if(notSelf) readerLineSizeSpinner.setValue(event.getData());
+                    break;
+                case SHOW_READER_LINT_AT_STATUS_BAR:
+                    if(notSelf) showReaderLineAtRadioButtonGroup.setSelected((boolean)event.getData()?
+                            atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
                     break;
             }
-        });
+        };
+        eventManage.addListener(ChapterChangeEvent.EVENT_ID, chapterChangeEventListener);
+        eventManage.addListener(ChaptersClearEvent.EVENT_ID, chaptersClearEventListener);
+        eventManage.addListener(ConfigChangeEvent.EVENT_ID, configChangeEventListener);
+        Disposable eventDisposable = () -> {
+            eventManage.removeListener(ChapterChangeEvent.EVENT_ID, chapterChangeEventListener);
+            eventManage.removeListener(ChaptersClearEvent.EVENT_ID, chaptersClearEventListener);
+            eventManage.removeListener(ConfigChangeEvent.EVENT_ID, configChangeEventListener);
+        };
+        Disposer.register(this, eventDisposable);
     }
 
     private void init(){
@@ -390,7 +414,7 @@ public class ReaderWindow {
         }
         catch (IOException e){
             e.printStackTrace();
-            sendNotify("文件读取错误", e.getLocalizedMessage(), NotificationType.ERROR);
+            sendNotify(Notification.TITLE_READ_CHAPTER_ERROR, e.getLocalizedMessage(), NotificationType.ERROR);
         }
     }
 
@@ -398,27 +422,12 @@ public class ReaderWindow {
         Notification.sendNotify(project, title, content, type);
     }
 
-    public String nextLine(){
-        String line = "正在初始化~~";
-        if(toolWindow.isAvailable()){
-            line = textReaderCore.nextLine();
-        }
-        return line;
-    }
-
-    public String previousLine(){
-        String line = "正在初始化~~";
-        if(toolWindow.isAvailable()){
-            line = textReaderCore.previousLine();
-        }
-        return line;
-    }
-
-    public boolean isReadyLineAction(){
-        return !titleList.isEmpty();
-    }
-
     public JPanel getContent(){
         return readerPanel;
+    }
+
+    @Override
+    public void dispose() {
+        ReaderWindowHolder.remove(project);
     }
 }

@@ -21,7 +21,7 @@ public class TextReaderCore {
 
     private TextFile textFile;
     private Vector<Chapter> chapterList = new Vector<>(0);
-    private int chapterIndex;
+    private int chapterIndex = 0;
 
     private String noBlankChapterText = "";
     private int positionInChapter = 0;
@@ -174,5 +174,9 @@ public class TextReaderCore {
     private void saveState(){
         textReaderStateService.setFilePath(textFile == null? "" : textFile.getFilePath());
         textReaderStateService.setChapters(chapterList);
+    }
+
+    public boolean isReady(){
+        return textFile != null && chapterList != null && chapterList.size() > 0;
     }
 }

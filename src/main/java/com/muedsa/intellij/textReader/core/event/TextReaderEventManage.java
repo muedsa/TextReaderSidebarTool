@@ -18,6 +18,13 @@ public class TextReaderEventManage {
         listenerList.add(listener);
     }
 
+    public void removeListener(String eventId, TextReaderEventListener listener){
+        List<TextReaderEventListener> listenerList = listenerMap.get(eventId);
+        if(listenerList != null){
+            listenerList.remove(listener);
+        }
+    }
+
     public void notifyEvent(TextReaderEvent event) {
         List<TextReaderEventListener> listenerList = listenerMap.get(event.getEventId());
         if(listenerList != null){

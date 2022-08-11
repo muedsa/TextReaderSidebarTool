@@ -14,4 +14,8 @@ public class ReaderWindowHolder {
     public static ReaderWindow get(Project project){
         return holder.get(project);
     }
+
+    public static void remove(Project project) {
+        holder.remove(project);
+    }
 }

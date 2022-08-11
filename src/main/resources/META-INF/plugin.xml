@@ -127,11 +127,16 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
-    <toolWindow id="TextReaderToolWindow"
-                  anchor="bottom"
-                  secondary="true"
-                  factoryClass="com.muedsa.intellij.textReader.factory.ToolWindowFactoryImpl"
-                  icon="TextReaderSidebarToolIcons.BOOK_DEAD"/>
+    <toolWindow
+        id="TextReaderToolWindow"
+        anchor="bottom"
+        secondary="true"
+        factoryClass="com.muedsa.intellij.textReader.factory.ReaderWindowFactoryImpl"
+        icon="TextReaderSidebarToolIcons.BOOK_DEAD"/>
+    <statusBarWidgetFactory
+        id="ReaderLineWidget"
+        implementation="com.muedsa.intellij.textReader.factory.ReaderLineStatusBarWidgetFactoryImpl">
+    </statusBarWidgetFactory>
   </extensions>
 
   <actions>

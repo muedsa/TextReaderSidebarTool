@@ -7,6 +7,14 @@ import com.intellij.openapi.project.Project;
 
 public class Notification {
 
+    public static final String TITLE_LOAD_FILE_SUCCESS = "加载文件成功";
+    public static final String TITLE_LOAD_FILE_ERROR = "加载文件失败";
+    public static final String TITLE_LOAD_FILE_REGEX_ERROR = "正则错误";
+    public static final String TITLE_ERROR = "错误";
+    public static final String TITLE_READ_CHAPTER_ERROR = "文件读取失败";
+    public static final String MSG_NOT_LOAD_FILE = "未初始化文章, 请在工具窗口载入文章";
+    public static final String MSG_DOT = ".";
+
     private static final NotificationGroup NORMAL_Notify_GROUP = new NotificationGroup(
             "com.muedsa.intellij.textReader.notify",
             NotificationDisplayType.BALLOON,

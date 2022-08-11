@@ -25,6 +25,9 @@ public class TextReaderConfig {
     //按行读取时的行大小
     private static int readerLineSize = 30;
 
+    //展示在窗口标题上
+    private static boolean showReaderLintAtStatusBar = false;
+
 
 //    //章节标题前缀
 //    public static String chapterTitlePrefix = "第";
@@ -68,37 +71,40 @@ public class TextReaderConfig {
         return readerLineSize;
     }
 
-    public static void setConfigValue(ConfigKey configKey, Object configValue, TextReaderEventManage eventManage){
+    public static boolean isShowReaderLintAtStatusBar() {
+        return showReaderLintAtStatusBar;
+    }
+
+    public static void setConfigValue(ConfigKey configKey, Object configValue, TextReaderEventManage eventManage, Object tag) {
         switch (configKey){
             case FONT_FAMILY:
                 fontFamily = (String) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
                 break;
             case FONT_SIZE:
                 fontSize = (int) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
                 break;
             case LINE_SPACE:
                 lineSpace = (double) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
                 break;
             case FIRST_LINE_INDENT:
                 firstLineIndent = (int) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
                 break;
             case PARAGRAPH_SPACE:
                 paragraphSpace = (int) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
                 break;
             case MAX_TITLE_LINE_SIZE:
                 maxTitleLineSize = (int) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
                 break;
             case READER_LINE_SIZE:
                 readerLineSize = (int) configValue;
-                eventManage.notifyEvent(new ConfigChangeEvent(configKey, configValue));
+                break;
+            case SHOW_READER_LINT_AT_STATUS_BAR:
+                showReaderLintAtStatusBar = (boolean) configValue;
                 break;
         }
+        ConfigChangeEvent event = new ConfigChangeEvent(configKey, configValue);
+        event.setTag(tag);
+        eventManage.notifyEvent(event);
     }
 
     public enum ConfigKey {
@@ -108,6 +114,7 @@ public class TextReaderConfig {
         FIRST_LINE_INDENT,
         PARAGRAPH_SPACE,
         MAX_TITLE_LINE_SIZE,
-        READER_LINE_SIZE
+        READER_LINE_SIZE,
+        SHOW_READER_LINT_AT_STATUS_BAR
     }
 }
