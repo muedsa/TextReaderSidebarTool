@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.muedsa.intellij.textReader</id>
   <name>TextReaderSidebarTool</name>
-  <vendor url="http://www.muedsa.com">MUEDSA</vendor>
+  <vendor url="https://github.com/MUedsa/TextReaderSiderTool">MUEDSA</vendor>
 
   <description><![CDATA[
       XD
