@@ -9,14 +9,13 @@ import com.muedsa.intellij.textReader.composes.ReaderWindow;
 import org.jetbrains.annotations.NotNull;
 
 public class ReaderWindowFactoryImpl implements ToolWindowFactory {
-    public static final String DEFAULT_TOOL_WINDOW_NAME = "Text Reader";
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ReaderWindow readerWindow = new ReaderWindow(project, toolWindow);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         ContentManager contentManager = toolWindow.getContentManager();
-        Content content = contentFactory.createContent(readerWindow.getContent(), DEFAULT_TOOL_WINDOW_NAME, false);
+        Content content = contentFactory.createContent(readerWindow.getContent(), "", false);
         Disposer.register(content, readerWindow);
         contentManager.addContent(content);
     }
