@@ -2,6 +2,7 @@ package com.muedsa.intellij.textReader.core.config;
 
 import com.muedsa.intellij.textReader.core.event.ConfigChangeEvent;
 import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
+import com.muedsa.intellij.textReader.util.ExpUIUtil;
 
 public class TextReaderConfig {
     //字体
@@ -26,8 +27,7 @@ public class TextReaderConfig {
     private static int readerLineSize = 30;
 
     //展示在窗口标题上
-    private static boolean showReaderLintAtStatusBar = false;
-
+    private static boolean showReaderLintAtStatusBar = ExpUIUtil.isIntelliJNewUI();
 
 //    //章节标题前缀
 //    public static String chapterTitlePrefix = "第";
