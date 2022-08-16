@@ -182,8 +182,7 @@ public class ReaderWindow implements Disposable {
 
         //搜素输入
         searchTextField.getDocument().addDocumentListener(new DocumentAdapter() {
-
-            private final List<searchThread> threadList = new Vector<>();
+            private SearchTask task = null;
 
             private void search(String searchText){
                 if(StringUtils.isEmpty(searchText)){
@@ -200,22 +199,19 @@ public class ReaderWindow implements Disposable {
 
             @Override
             protected void textChanged(@NotNull DocumentEvent documentEvent){
-                threadList.forEach(i -> {
-                    if(i != null){
-                        i.cancel();
-                    }
-                });
+                if(task != null) {
+                    task.cancel();
+                }
                 String searchText = searchTextField.getText();
-                searchThread thread = new searchThread(searchText);
-                thread.start();
-                threadList.add(thread);
+                task = new SearchTask(searchText);
+                task.start();
             }
 
-            class searchThread extends Thread{
-                private boolean cancel = false;
+            class SearchTask extends Thread {
+                private boolean cancelOrComplete = false;
                 private final String searchText;
 
-                public searchThread(String searchText){
+                public SearchTask(String searchText){
                     super();
                     this.searchText = searchText;
                 }
@@ -224,16 +220,16 @@ public class ReaderWindow implements Disposable {
                 public void run(){
                     try{
                         Thread.sleep(300);
-                        if(!cancel){
+                        if(!cancelOrComplete){
                             search(searchText);
+                            cancelOrComplete = true;
                         }
-                        threadList.remove(this);
                     } catch(InterruptedException e){
                         e.printStackTrace();
                     }
                 }
                 public void cancel(){
-                    cancel = true;
+                    cancelOrComplete = true;
                 }
             }
         });
