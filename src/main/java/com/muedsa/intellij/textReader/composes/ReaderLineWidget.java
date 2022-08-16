@@ -86,7 +86,7 @@ public class ReaderLineWidget implements StatusBarWidget, Disposable {
                 boolean show = (boolean) configChangeEvent.getData();
                 setText(ReaderLinePresentation.DEFAULT_TEXT);
                 if(show){
-                    ReaderLineUtil.clear(project);
+                    ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLintAtStatusBar());
                     StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
                     if(widgetFactory != null) {
                         ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);

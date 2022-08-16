@@ -2,13 +2,23 @@ package com.muedsa.intellij.textReader.util;
 
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.muedsa.intellij.textReader.composes.ReaderLineWidget;
 import com.muedsa.intellij.textReader.composes.ReaderLineWidgetHolder;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.notify.Notification;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 public class ReaderLineUtil {
+
+    private static Set<Project> historyFlag = new HashSet<>();
+    private static Project LAST_PROJECT = null;
+    private static boolean IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST = TextReaderConfig.isShowReaderLintAtStatusBar();
+
     public static void nextLine(Project project) {
         String line;
         NotificationType type;
@@ -28,6 +38,7 @@ public class ReaderLineUtil {
         }else{
             Notification.sendHiddenNotify(project, line, type);
         }
+        afterAction(project);
     }
 
     public static void previousLine(Project project) {
@@ -49,13 +60,14 @@ public class ReaderLineUtil {
         }else{
             Notification.sendHiddenNotify(project, line, type);
         }
+        afterAction(project);
     }
 
-    public static void clear(Project project) {
-        if(TextReaderConfig.isShowReaderLintAtStatusBar()){
+    public static void clear(Project project, boolean isShowReaderLintAtStatusBar) {
+        if(isShowReaderLintAtStatusBar){
             ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
             if(readerLineWidget != null){
-                readerLineWidget.setText(null);
+                readerLineWidget.setText(ReaderLineWidget.ReaderLinePresentation.DEFAULT_TEXT);
             }
         }else{
             int i = 0;
@@ -64,5 +76,24 @@ public class ReaderLineUtil {
                 i++;
             }
         }
+    }
+
+    private static void afterAction(Project project) {
+        if(!historyFlag.contains(project)){
+            historyFlag.add(project);
+            registerClearHistoryDispose(project);
+        }
+        if(LAST_PROJECT != null && !Objects.equals(project, LAST_PROJECT)){
+            clear(LAST_PROJECT, IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST);
+        }
+        LAST_PROJECT = project;
+        IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST = TextReaderConfig.isShowReaderLintAtStatusBar();
+    }
+
+    public static void registerClearHistoryDispose(Project project){
+        Disposer.register(project, () -> {
+            historyFlag.remove(project);
+            if(Objects.equals(project, LAST_PROJECT)) LAST_PROJECT = null;
+        });
     }
 }

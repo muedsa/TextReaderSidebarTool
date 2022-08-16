@@ -1,6 +1,7 @@
 package com.muedsa.intellij.textReader.core;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
 import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.core.event.ChapterChangeEvent;
 import com.muedsa.intellij.textReader.core.event.ChaptersClearEvent;
@@ -25,6 +26,10 @@ public class TextReaderCore {
 
     private String noBlankChapterText = "";
     private int positionInChapter = 0;
+
+    private TextReaderCore() {
+        initStateService();
+    }
 
     public void initStateService(){
         if(textReaderStateService == null){

@@ -72,7 +72,6 @@ public class ReaderWindow implements Disposable {
         init();
         updateRegex();
         eventRegister();
-        textReaderCore.initStateService();
         if(textReaderCore.getChapters().isEmpty()){
             this.searchTextField.setEnabled(true);
         }
@@ -291,7 +290,7 @@ public class ReaderWindow implements Disposable {
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            ReaderLineUtil.clear(project);
+            ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLintAtStatusBar());
         };
         TextReaderEventListener configChangeEventListener = event -> {
             ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
