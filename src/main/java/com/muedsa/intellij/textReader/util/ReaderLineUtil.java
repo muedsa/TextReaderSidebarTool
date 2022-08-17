@@ -33,7 +33,7 @@ public class ReaderLineUtil {
         if(TextReaderConfig.isShowReaderLintAtStatusBar()){
             ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
             if(readerLineWidget != null){
-                readerLineWidget.setText(line);
+                readerLineWidget.setLine(line);
             }
         }else{
             Notification.sendHiddenNotify(project, line, type);
@@ -55,7 +55,7 @@ public class ReaderLineUtil {
         if(TextReaderConfig.isShowReaderLintAtStatusBar()){
             ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
             if(readerLineWidget != null){
-                readerLineWidget.setText(line);
+                readerLineWidget.setLine(line);
             }
         }else{
             Notification.sendHiddenNotify(project, line, type);
@@ -67,7 +67,7 @@ public class ReaderLineUtil {
         if(isShowReaderLintAtStatusBar){
             ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
             if(readerLineWidget != null){
-                readerLineWidget.setText(ReaderLineWidget.ReaderLinePresentation.DEFAULT_TEXT);
+                readerLineWidget.setLine(ReaderLineWidget.DEFAULT_LINE);
             }
         }else{
             int i = 0;
