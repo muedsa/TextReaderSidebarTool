@@ -41,12 +41,12 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
 
     @Override
     public @Nullable String getShortcutText() {
-        return line;
+        return null;
     }
 
     @Override
     public @Nullable Consumer<MouseEvent> getClickConsumer() {
-        return e -> System.out.println("Clicked");
+        return null;
     }
 
     @Override
