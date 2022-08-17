@@ -34,32 +34,6 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
     private StatusBar statusBar;
     private TextReaderEventListener listener;
 
-    @Override
-    public @Nullable @Nls(capitalization = Nls.Capitalization.Sentence) String getTooltipText() {
-        return DISPLAY_NAME;
-    }
-
-    @Override
-    public @Nullable String getShortcutText() {
-        return null;
-    }
-
-    @Override
-    public @Nullable Consumer<MouseEvent> getClickConsumer() {
-        return null;
-    }
-
-    @Override
-    public @NotNull @Nls String getText() {
-        return line;
-    }
-
-    @Override
-    public float getAlignment() {
-        return Component.CENTER_ALIGNMENT;
-    }
-
-
     public final class ReaderLineComponent extends TextPanel implements StatusBarWidgetWrapper{
 
         private TextPresentation presentation;
@@ -86,7 +60,6 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
             setVisible(!text.isEmpty());
         }
     }
-
 
     public ReaderLineWidget(Project project) {
         component = new ReaderLineComponent(this);
@@ -136,6 +109,31 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
     @Override
     public JComponent getComponent() {
         return component;
+    }
+
+    @Override
+    public @Nullable @Nls(capitalization = Nls.Capitalization.Sentence) String getTooltipText() {
+        return DISPLAY_NAME;
+    }
+
+    @Override
+    public @Nullable String getShortcutText() {
+        return null;
+    }
+
+    @Override
+    public @Nullable Consumer<MouseEvent> getClickConsumer() {
+        return null;
+    }
+
+    @Override
+    public @NotNull @Nls String getText() {
+        return line;
+    }
+
+    @Override
+    public float getAlignment() {
+        return Component.CENTER_ALIGNMENT;
     }
 
     @Override
