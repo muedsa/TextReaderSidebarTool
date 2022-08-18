@@ -83,7 +83,9 @@ public class ReaderLineUtil {
             historyFlag.add(project);
             registerClearHistoryDispose(project);
         }
-        if(LAST_PROJECT != null && !Objects.equals(project, LAST_PROJECT)){
+        if(LAST_PROJECT != null
+                && (!Objects.equals(project, LAST_PROJECT)
+                    || IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST != TextReaderConfig.isShowReaderLineAtStatusBar())){
             clear(LAST_PROJECT, IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST);
         }
         LAST_PROJECT = project;
