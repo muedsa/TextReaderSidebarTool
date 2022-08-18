@@ -10,7 +10,6 @@ import com.intellij.openapi.wm.impl.status.TextPanel;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetSettings;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetWrapper;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
-import com.intellij.ui.JBColor;
 import com.intellij.util.Consumer;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
@@ -71,7 +70,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
                 boolean show = (boolean) configChangeEvent.getData();
                 setLine(DEFAULT_LINE);
                 if(show){
-                    ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLintAtStatusBar());
+                    ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLineAtStatusBar());
                     StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
                     if(widgetFactory != null) {
                         ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);
@@ -97,7 +96,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
 
     @Override
     public void install(@NotNull StatusBar statusBar) {
-        setColor(component.getBackground().brighter());
+        setColor(TextReaderConfig.getReaderLineColor());
     }
 
     @Override

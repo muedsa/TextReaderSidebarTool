@@ -26,7 +26,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.regex.Pattern;
@@ -135,7 +134,7 @@ public class ReaderWindow implements Disposable {
         showReaderLineAtRadioButtonGroup = new ButtonGroup();
         showReaderLineAtRadioButtonGroup.add(atHiddenNotifyRadioButton);
         showReaderLineAtRadioButtonGroup.add(atStatusBarRadioButton);
-        showReaderLineAtRadioButtonGroup.setSelected(TextReaderConfig.isShowReaderLintAtStatusBar()?
+        showReaderLineAtRadioButtonGroup.setSelected(TextReaderConfig.isShowReaderLineAtStatusBar()?
                 atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
         ActionListener actionListener = e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR,
                 showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel()), eventManage, ReaderWindow.this);
@@ -286,7 +285,7 @@ public class ReaderWindow implements Disposable {
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLintAtStatusBar());
+            ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLineAtStatusBar());
         };
         TextReaderEventListener configChangeEventListener = event -> {
             ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;

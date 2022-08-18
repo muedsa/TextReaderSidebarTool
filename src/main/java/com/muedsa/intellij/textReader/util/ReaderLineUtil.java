@@ -17,7 +17,7 @@ public class ReaderLineUtil {
 
     private static Set<Project> historyFlag = new HashSet<>();
     private static Project LAST_PROJECT = null;
-    private static boolean IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST = TextReaderConfig.isShowReaderLintAtStatusBar();
+    private static boolean IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST = TextReaderConfig.isShowReaderLineAtStatusBar();
 
     public static void nextLine(Project project) {
         String line;
@@ -30,7 +30,7 @@ public class ReaderLineUtil {
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
         }
-        if(TextReaderConfig.isShowReaderLintAtStatusBar()){
+        if(TextReaderConfig.isShowReaderLineAtStatusBar()){
             ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
             if(readerLineWidget != null){
                 readerLineWidget.setLine(line);
@@ -52,7 +52,7 @@ public class ReaderLineUtil {
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
         }
-        if(TextReaderConfig.isShowReaderLintAtStatusBar()){
+        if(TextReaderConfig.isShowReaderLineAtStatusBar()){
             ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
             if(readerLineWidget != null){
                 readerLineWidget.setLine(line);
@@ -87,7 +87,7 @@ public class ReaderLineUtil {
             clear(LAST_PROJECT, IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST);
         }
         LAST_PROJECT = project;
-        IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST = TextReaderConfig.isShowReaderLintAtStatusBar();
+        IS_SHOW_READER_LINT_AT_STATUS_BAR_FROM_LAST = TextReaderConfig.isShowReaderLineAtStatusBar();
     }
 
     public static void registerClearHistoryDispose(Project project){

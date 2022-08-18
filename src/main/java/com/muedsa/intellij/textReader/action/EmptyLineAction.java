@@ -9,6 +9,6 @@ import org.jetbrains.annotations.NotNull;
 public class EmptyLineAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        ReaderLineUtil.clear(e.getProject(), TextReaderConfig.isShowReaderLintAtStatusBar());
+        ReaderLineUtil.clear(e.getProject(), TextReaderConfig.isShowReaderLineAtStatusBar());
     }
 }

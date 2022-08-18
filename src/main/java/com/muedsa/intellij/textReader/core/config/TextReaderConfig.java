@@ -1,8 +1,11 @@
 package com.muedsa.intellij.textReader.core.config;
 
+import com.intellij.util.ui.UIUtil;
 import com.muedsa.intellij.textReader.core.event.ConfigChangeEvent;
 import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
 import com.muedsa.intellij.textReader.util.ExpUIUtil;
+
+import java.awt.*;
 
 public class TextReaderConfig {
     //字体
@@ -26,8 +29,11 @@ public class TextReaderConfig {
     //按行读取时的行大小
     private static int readerLineSize = 30;
 
-    //展示在窗口标题上
-    private static boolean showReaderLintAtStatusBar = ExpUIUtil.isIntelliJNewUI();
+    //使用状态栏部件展示按行读取的内容
+    private static boolean showReaderLineAtStatusBar = ExpUIUtil.isIntelliJNewUI();
+
+    //状态栏部件文本颜色
+    private static Color readerLineColor = UIUtil.getPanelBackground().brighter();
 
 //    //章节标题前缀
 //    public static String chapterTitlePrefix = "第";
@@ -71,8 +77,12 @@ public class TextReaderConfig {
         return readerLineSize;
     }
 
-    public static boolean isShowReaderLintAtStatusBar() {
-        return showReaderLintAtStatusBar;
+    public static boolean isShowReaderLineAtStatusBar() {
+        return showReaderLineAtStatusBar;
+    }
+
+    public static Color getReaderLineColor() {
+        return readerLineColor;
     }
 
     public static void setConfigValue(ConfigKey configKey, Object configValue, TextReaderEventManage eventManage, Object tag) {
@@ -99,7 +109,7 @@ public class TextReaderConfig {
                 readerLineSize = (int) configValue;
                 break;
             case SHOW_READER_LINT_AT_STATUS_BAR:
-                showReaderLintAtStatusBar = (boolean) configValue;
+                showReaderLineAtStatusBar = (boolean) configValue;
                 break;
         }
         ConfigChangeEvent event = new ConfigChangeEvent(configKey, configValue);
