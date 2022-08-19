@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.*;
@@ -59,7 +60,10 @@ public class ReaderWindow implements Disposable {
     private JRadioButton atHiddenNotifyRadioButton;
     private JRadioButton atStatusBarRadioButton;
     private ButtonGroup showReaderLineAtRadioButtonGroup;
-
+    private JSpinner readerLineColorAlphaChannelSpinner;
+    private JSpinner readerLineColorRedChannelSpinner;
+    private JSpinner readerLineColorGreenChannelSpinner;
+    private JSpinner readerLineColorBlueChannelSpinner;
     private final TextReaderCore textReaderCore;
 
 
@@ -86,7 +90,7 @@ public class ReaderWindow implements Disposable {
         fontFamilyEl.setModel(comboBoxModel);
         fontFamilyEl.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_FAMILY, e.getItem(), eventManage, ReaderWindow.this);
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_FAMILY, e.getItem(), ReaderWindow.this);
             }
         });
         int index = Arrays.binarySearch(fontFamilyNames, TextReaderConfig.getFontFamily());
@@ -98,37 +102,37 @@ public class ReaderWindow implements Disposable {
         SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFontSize(), 0, 100, 1);
         fontSizeSpinner.setModel(fontSizeSpinnerModel);
         fontSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_SIZE,
-                fontSizeSpinner.getValue(), eventManage, ReaderWindow.this));
+                fontSizeSpinner.getValue(), ReaderWindow.this));
 
         //字体行间距
         SpinnerModel lineSpaceSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getLineSpace(), 0, 2.5, 0.1);
         lineSpaceSpinner.setModel(lineSpaceSpinnerModel);
         lineSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.LINE_SPACE,
-                lineSpaceSpinner.getValue(), eventManage, ReaderWindow.this));
+                lineSpaceSpinner.getValue(), ReaderWindow.this));
 
         //首行缩进
         SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFirstLineIndent(), 0, 4, 1);
         firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
         firstLineIndentSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FIRST_LINE_INDENT,
-                firstLineIndentSpinner.getValue(), eventManage, ReaderWindow.this));
+                firstLineIndentSpinner.getValue(), ReaderWindow.this));
 
         //段落间隔
         SpinnerModel paragraphSpaceSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getParagraphSpace(), 0, 4, 1);
         paragraphSpaceSpinner.setModel(paragraphSpaceSpinnerModel);
         paragraphSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.PARAGRAPH_SPACE,
-                paragraphSpaceSpinner.getValue(), eventManage, ReaderWindow.this));
+                paragraphSpaceSpinner.getValue(), ReaderWindow.this));
 
         //标题解析最大字数限制设置
         SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getMaxTitleLineSize(), 1, 200, 1);
         maxTitleLineSizeSpinner.setModel(maxLineSizeSpinnerModel);
         maxTitleLineSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.MAX_TITLE_LINE_SIZE,
-                maxTitleLineSizeSpinner.getValue(), eventManage, ReaderWindow.this));
+                maxTitleLineSizeSpinner.getValue(), ReaderWindow.this));
 
         //每行字数
         SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineSize(), 0, 100, 1);
         readerLineSizeSpinner.setModel(lineSizeSpinnerModel);
         lineSizeSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_SIZE,
-                readerLineSizeSpinner.getValue(), eventManage, ReaderWindow.this));
+                readerLineSizeSpinner.getValue(), ReaderWindow.this));
 
         //按行读取时展示的位置
         showReaderLineAtRadioButtonGroup = new ButtonGroup();
@@ -136,10 +140,30 @@ public class ReaderWindow implements Disposable {
         showReaderLineAtRadioButtonGroup.add(atStatusBarRadioButton);
         showReaderLineAtRadioButtonGroup.setSelected(TextReaderConfig.isShowReaderLineAtStatusBar()?
                 atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
-        ActionListener actionListener = e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR,
-                showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel()), eventManage, ReaderWindow.this);
-        atHiddenNotifyRadioButton.addActionListener(actionListener);
-        atStatusBarRadioButton.addActionListener(actionListener);
+        ActionListener showReaderLineAtRadioButtonActionListener = e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR,
+                showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel()), ReaderWindow.this);
+        atHiddenNotifyRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
+        atStatusBarRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
+
+        //文本颜色
+        SpinnerModel readerLineColorRedChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getRed(), 0, 255, 1);
+        SpinnerModel readerLineColorGreenChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getGreen(), 0, 255, 1);
+        SpinnerModel readerLineColorBlueChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getGreen(), 0, 255, 1);
+        SpinnerModel readerLineColorAlphaChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getAlpha(), 0, 255, 1);
+        readerLineColorRedChannelSpinner.setModel(readerLineColorRedChannelSpinnerModel);
+        readerLineColorGreenChannelSpinner.setModel(readerLineColorGreenChannelSpinnerModel);
+        readerLineColorBlueChannelSpinner.setModel(readerLineColorBlueChannelSpinnerModel);
+        readerLineColorAlphaChannelSpinner.setModel(readerLineColorAlphaChannelSpinnerModel);
+        ChangeListener readLineColorChangeListener = e -> {
+            Color newColor = new Color((int) readerLineColorRedChannelSpinner.getValue(), (int) readerLineColorGreenChannelSpinner.getValue(),
+                    (int) readerLineColorBlueChannelSpinner.getValue(), (int) readerLineColorAlphaChannelSpinner.getValue());
+            TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_COLOR, newColor, ReaderWindow.this);
+        };
+        readerLineColorRedChannelSpinner.addChangeListener(readLineColorChangeListener);
+        readerLineColorGreenChannelSpinner.addChangeListener(readLineColorChangeListener);
+        readerLineColorBlueChannelSpinner.addChangeListener(readLineColorChangeListener);
+        readerLineColorAlphaChannelSpinner.addChangeListener(readLineColorChangeListener);
+
 
         //添加文件
         fileButton.addActionListener(e -> {
@@ -320,6 +344,15 @@ public class ReaderWindow implements Disposable {
                 case SHOW_READER_LINT_AT_STATUS_BAR:
                     if(notSelf) showReaderLineAtRadioButtonGroup.setSelected((boolean)event.getData()?
                             atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
+                    break;
+                case READER_LINE_COLOR:
+                    if(notSelf) {
+                        Color color = (Color) event.getData();
+                        readerLineColorRedChannelSpinner.setValue(color.getRed());
+                        readerLineColorGreenChannelSpinner.setValue(color.getGreen());
+                        readerLineColorBlueChannelSpinner.setValue(color.getBlue());
+                        readerLineColorAlphaChannelSpinner.setValue(color.getAlpha());
+                    }
                     break;
             }
         };

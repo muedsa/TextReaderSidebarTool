@@ -1,6 +1,7 @@
 package com.muedsa.intellij.textReader.core.config;
 
 import com.intellij.util.ui.UIUtil;
+import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.core.event.ConfigChangeEvent;
 import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
 import com.muedsa.intellij.textReader.util.ExpUIUtil;
@@ -44,7 +45,6 @@ public class TextReaderConfig {
 //    //固定标题
 //    public static String fixChapterTitle = "前言|引子";
 
-
     public static String getFontFamily() {
         return fontFamily;
     }
@@ -53,11 +53,9 @@ public class TextReaderConfig {
         return fontSize;
     }
 
-
     public static double getLineSpace() {
         return lineSpace;
     }
-
 
     public static int getFirstLineIndent() {
         return firstLineIndent;
@@ -67,11 +65,9 @@ public class TextReaderConfig {
         return paragraphSpace;
     }
 
-
     public static int getMaxTitleLineSize() {
         return maxTitleLineSize;
     }
-
 
     public static int getReaderLineSize() {
         return readerLineSize;
@@ -85,7 +81,7 @@ public class TextReaderConfig {
         return readerLineColor;
     }
 
-    public static void setConfigValue(ConfigKey configKey, Object configValue, TextReaderEventManage eventManage, Object tag) {
+    public static void setConfigValue(ConfigKey configKey, Object configValue, Object tag) {
         switch (configKey){
             case FONT_FAMILY:
                 fontFamily = (String) configValue;
@@ -111,10 +107,13 @@ public class TextReaderConfig {
             case SHOW_READER_LINT_AT_STATUS_BAR:
                 showReaderLineAtStatusBar = (boolean) configValue;
                 break;
+            case READER_LINE_COLOR:
+                readerLineColor = (Color) configValue;
+                break;
         }
         ConfigChangeEvent event = new ConfigChangeEvent(configKey, configValue);
         event.setTag(tag);
-        eventManage.notifyEvent(event);
+        TextReaderCore.getInstance().getEventManage().notifyEvent(event);
     }
 
     public enum ConfigKey {
@@ -125,6 +124,7 @@ public class TextReaderConfig {
         PARAGRAPH_SPACE,
         MAX_TITLE_LINE_SIZE,
         READER_LINE_SIZE,
-        SHOW_READER_LINT_AT_STATUS_BAR
+        SHOW_READER_LINT_AT_STATUS_BAR,
+        READER_LINE_COLOR
     }
 }

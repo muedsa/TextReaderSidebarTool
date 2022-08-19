@@ -66,7 +66,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
         ReaderLineWidgetHolder.put(project, this);
         listener = event -> {
             ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
-            if(configChangeEvent.getConfigKey() == TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR) {
+            if(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR.equals(configChangeEvent.getConfigKey())) {
                 boolean show = (boolean) configChangeEvent.getData();
                 setLine(DEFAULT_LINE);
                 if(show){
@@ -76,6 +76,9 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
                         ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);
                     }
                 }
+            }else if(TextReaderConfig.ConfigKey.READER_LINE_COLOR.equals(configChangeEvent.getConfigKey())){
+                Color color = (Color) configChangeEvent.getData();
+                component.setForeground(color);
             }
         };
         TextReaderCore.getInstance().getEventManage().addListener(ConfigChangeEvent.EVENT_ID, listener);
@@ -90,13 +93,9 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
         component.beforeUpdate();
     }
 
-    public void setColor(Color color) {
-        component.setForeground(color);
-    }
-
     @Override
     public void install(@NotNull StatusBar statusBar) {
-        setColor(TextReaderConfig.getReaderLineColor());
+        component.setForeground(TextReaderConfig.getReaderLineColor());
     }
 
     @Override
