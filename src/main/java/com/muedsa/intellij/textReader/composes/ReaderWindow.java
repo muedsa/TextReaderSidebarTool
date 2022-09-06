@@ -32,7 +32,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.regex.Pattern;
@@ -96,8 +95,6 @@ public class ReaderWindow implements Disposable {
     }
 
     private void createUIComponents(){
-        TextReaderEventManage eventManage = textReaderCore.getEventManage();
-
         //字体
         String[] fontFamilyNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>(fontFamilyNames);
@@ -107,10 +104,7 @@ public class ReaderWindow implements Disposable {
                 TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_FAMILY, e.getItem(), ReaderWindow.this);
             }
         });
-        int index = Arrays.binarySearch(fontFamilyNames, TextReaderConfig.getFontFamily());
-        if(index > 0){
-            fontFamilyEl.setSelectedIndex(index);
-        }
+        updateFontFamilyEl(TextReaderConfig.getFontFamily());
 
         //字体大小
         SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFontSize(), 0, 100, 1);
@@ -383,20 +377,20 @@ public class ReaderWindow implements Disposable {
             boolean notSelf = Objects.equals(ReaderWindow.this, event.getTag());
             switch (configChangeEvent.getConfigKey()){
                 case FONT_FAMILY:
-                    if(notSelf) fontFamilyEl.getModel().setSelectedItem(event.getData());
-                    updateFontFamily();
+                    if(notSelf) updateFontFamilyEl((String) event.getData());
+                    updateEditorFontFamily();
                     break;
                 case FONT_SIZE:
                     if(notSelf) fontSizeSpinner.setValue(event.getData());
-                    updateFontSize();
+                    updateEditorFontSize();
                     break;
                 case LINE_SPACE:
                     if(notSelf) lineSpaceSpinner.setValue(event.getData());
-                    updateLineSpace();
+                    updateEditorLineSpace();
                     break;
                 case FIRST_LINE_INDENT:
                     if(notSelf) firstLineIndentSpinner.setValue(event.getData());
-                    updateFirstLineIndent();
+                    updateEditorFirstLineIndent();
                     break;
                 case PARAGRAPH_SPACE:
                     if(notSelf) paragraphSpaceSpinner.setValue(event.getData());
@@ -444,10 +438,10 @@ public class ReaderWindow implements Disposable {
 
     private void init(){
         //字体风格初始化
-        updateFontFamily();
-        updateFontSize();
-        updateLineSpace();
-        updateFirstLineIndent();
+        updateEditorFontFamily();
+        updateEditorFontSize();
+        updateEditorLineSpace();
+        updateEditorFirstLineIndent();
 
         Chapter chapter = textReaderCore.getChapter();
         if(chapter != null){
@@ -477,7 +471,23 @@ public class ReaderWindow implements Disposable {
         }
     }
 
-    private void updateFontFamily(){
+    private void updateFontFamilyEl(String newFontFamily) {
+        ComboBoxModel<String> model = fontFamilyEl.getModel();
+        int size = model.getSize();
+        int newSelectedIndex = -1;
+        for (int i = 0; i < size; i++) {
+            String fontFamily = model.getElementAt(i);
+            if(fontFamily.equals(newFontFamily)){
+                newSelectedIndex = i;
+                break;
+            }
+        }
+        if(newSelectedIndex > -1) {
+            fontFamilyEl.setSelectedIndex(newSelectedIndex);
+        }
+    }
+
+    private void updateEditorFontFamily(){
         String fontFamily = (String)fontFamilyEl.getSelectedItem();
         StyledDocument styledDocument = textContent.getStyledDocument();
         SimpleAttributeSet attributes = new SimpleAttributeSet();
@@ -485,7 +495,7 @@ public class ReaderWindow implements Disposable {
         styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
     }
 
-    private void updateFontSize(){
+    private void updateEditorFontSize(){
         int fontSize = (int)fontSizeSpinner.getValue();
         StyledDocument styledDocument = textContent.getStyledDocument();
         SimpleAttributeSet attributes = new SimpleAttributeSet();
@@ -493,7 +503,7 @@ public class ReaderWindow implements Disposable {
         styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
     }
 
-    private void updateLineSpace(){
+    private void updateEditorLineSpace(){
         float lineSpace = ((Double)lineSpaceSpinner.getValue()).floatValue();
         StyledDocument styledDocument = textContent.getStyledDocument();
         SimpleAttributeSet attributes = new SimpleAttributeSet();
@@ -501,7 +511,7 @@ public class ReaderWindow implements Disposable {
         styledDocument.setParagraphAttributes(0, styledDocument.getLength(), attributes, false);
     }
 
-    private void updateFirstLineIndent(){
+    private void updateEditorFirstLineIndent(){
         float firstLineIndent = ((Integer)firstLineIndentSpinner.getValue()) * ((Integer)fontSizeSpinner.getValue()).floatValue();
         StyledDocument styledDocument = textContent.getStyledDocument();
         SimpleAttributeSet attributes = new SimpleAttributeSet();

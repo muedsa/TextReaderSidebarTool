@@ -10,7 +10,7 @@ import java.awt.*;
 
 public class TextReaderConfig {
     //字体
-    private static String fontFamily = "Microsoft YaHei UI";
+    private static String fontFamily = "SansSerif";
 
     //字体大小
     private static int fontSize = 12;
