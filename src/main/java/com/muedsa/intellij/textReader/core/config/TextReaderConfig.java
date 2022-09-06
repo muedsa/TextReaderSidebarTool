@@ -1,9 +1,9 @@
 package com.muedsa.intellij.textReader.core.config;
 
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.core.event.ConfigChangeEvent;
-import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
 import com.muedsa.intellij.textReader.util.ExpUIUtil;
 
 import java.awt.*;
@@ -30,11 +30,21 @@ public class TextReaderConfig {
     //按行读取时的行大小
     private static int readerLineSize = 30;
 
-    //使用状态栏部件展示按行读取的内容
-    private static boolean showReaderLineAtStatusBar = ExpUIUtil.isIntelliJNewUI();
+    //按行读取的内容展示位置
+    private static ShowReaderLineType showReaderLineType = ExpUIUtil.isIntelliJNewUI() ? ShowReaderLineType.STATUS_BAR :
+            ShowReaderLineType.NOTIFY;
 
     //状态栏部件文本颜色
-    private static Color readerLineColor = UIUtil.getPanelBackground().brighter();
+    private static JBColor readerLineColor = new JBColor(UIUtil.getPanelBackground().brighter(), UIUtil.getPanelBackground().brighter());
+
+    //编辑器背景偏移类型
+    private static EditBackgroundOffsetType editBackgroundOffsetType = EditBackgroundOffsetType.LEFT_TOP;
+
+    //编辑器背景水平偏移量
+    private static int editBackgroundOffsetX = 100;
+
+    //编辑器背景竖直偏移量
+    private static int editBackgroundOffsetY = 400;
 
 //    //章节标题前缀
 //    public static String chapterTitlePrefix = "第";
@@ -73,12 +83,24 @@ public class TextReaderConfig {
         return readerLineSize;
     }
 
-    public static boolean isShowReaderLineAtStatusBar() {
-        return showReaderLineAtStatusBar;
+    public static ShowReaderLineType getShowReaderLineType() {
+        return showReaderLineType;
     }
 
     public static Color getReaderLineColor() {
         return readerLineColor;
+    }
+
+    public static EditBackgroundOffsetType getEditBackgroundOffsetType() {
+        return editBackgroundOffsetType;
+    }
+
+    public static int getEditBackgroundOffsetX() {
+        return editBackgroundOffsetX;
+    }
+
+    public static int getEditBackgroundOffsetY() {
+        return editBackgroundOffsetY;
     }
 
     public static void setConfigValue(ConfigKey configKey, Object configValue, Object tag) {
@@ -104,11 +126,20 @@ public class TextReaderConfig {
             case READER_LINE_SIZE:
                 readerLineSize = (int) configValue;
                 break;
-            case SHOW_READER_LINT_AT_STATUS_BAR:
-                showReaderLineAtStatusBar = (boolean) configValue;
+            case SHOW_READER_LINE_TYPE:
+                showReaderLineType = (ShowReaderLineType) configValue;
                 break;
             case READER_LINE_COLOR:
-                readerLineColor = (Color) configValue;
+                readerLineColor = (JBColor) configValue;
+                break;
+            case EDITOR_BACKGROUND_OFFSET_TYPE:
+                editBackgroundOffsetType = (EditBackgroundOffsetType) configValue;
+                break;
+            case EDITOR_BACKGROUND_OFFSET_X:
+                editBackgroundOffsetX = (int) configValue;
+                break;
+            case EDITOR_BACKGROUND_OFFSET_Y:
+                editBackgroundOffsetY = (int) configValue;
                 break;
         }
         ConfigChangeEvent event = new ConfigChangeEvent(configKey, configValue);
@@ -124,7 +155,23 @@ public class TextReaderConfig {
         PARAGRAPH_SPACE,
         MAX_TITLE_LINE_SIZE,
         READER_LINE_SIZE,
-        SHOW_READER_LINT_AT_STATUS_BAR,
-        READER_LINE_COLOR
+        SHOW_READER_LINE_TYPE,
+        READER_LINE_COLOR,
+        EDITOR_BACKGROUND_OFFSET_TYPE,
+        EDITOR_BACKGROUND_OFFSET_X,
+        EDITOR_BACKGROUND_OFFSET_Y
+    }
+
+    public enum ShowReaderLineType {
+        NOTIFY,
+        STATUS_BAR,
+        EDITOR_BACKGROUND
+    }
+
+    public enum EditBackgroundOffsetType {
+        LEFT_TOP,
+        LEFT_BOTTOM,
+        RIGHT_TOP,
+        RIGHT_BOTTOM
     }
 }

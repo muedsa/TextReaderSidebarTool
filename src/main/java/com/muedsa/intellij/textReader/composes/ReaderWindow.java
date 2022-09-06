@@ -8,6 +8,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.muedsa.intellij.textReader.core.Chapter;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
@@ -22,9 +23,14 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
@@ -64,6 +70,14 @@ public class ReaderWindow implements Disposable {
     private JSpinner readerLineColorRedChannelSpinner;
     private JSpinner readerLineColorGreenChannelSpinner;
     private JSpinner readerLineColorBlueChannelSpinner;
+    private JRadioButton atEditorBackgroundRadioButton;
+    private JRadioButton atLeftTopRadioButton;
+    private JRadioButton atRightBottomRadioButton;
+    private JRadioButton atLeftBottomRadioButton;
+    private JRadioButton atRightTopRadioButton;
+    private ButtonGroup editorBackgroundOffsetTypeButtonGroup;
+    private JSpinner offsetXSpinner;
+    private JSpinner offsetYSpinner;
     private final TextReaderCore textReaderCore;
 
 
@@ -138,12 +152,23 @@ public class ReaderWindow implements Disposable {
         showReaderLineAtRadioButtonGroup = new ButtonGroup();
         showReaderLineAtRadioButtonGroup.add(atHiddenNotifyRadioButton);
         showReaderLineAtRadioButtonGroup.add(atStatusBarRadioButton);
-        showReaderLineAtRadioButtonGroup.setSelected(TextReaderConfig.isShowReaderLineAtStatusBar()?
-                atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
-        ActionListener showReaderLineAtRadioButtonActionListener = e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR,
-                showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel()), ReaderWindow.this);
+        showReaderLineAtRadioButtonGroup.add(atEditorBackgroundRadioButton);
+        updateShowReaderLineTypeButtonGroup(TextReaderConfig.getShowReaderLineType());
+        ActionListener showReaderLineAtRadioButtonActionListener = e -> {
+            if(showReaderLineAtRadioButtonGroup.getSelection().equals(atHiddenNotifyRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE,
+                        TextReaderConfig.ShowReaderLineType.NOTIFY, ReaderWindow.this);
+            }else if(showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE,
+                        TextReaderConfig.ShowReaderLineType.STATUS_BAR, ReaderWindow.this);
+            }else if(showReaderLineAtRadioButtonGroup.getSelection().equals(atEditorBackgroundRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE,
+                        TextReaderConfig.ShowReaderLineType.EDITOR_BACKGROUND, ReaderWindow.this);
+            }
+        };
         atHiddenNotifyRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
         atStatusBarRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
+        atEditorBackgroundRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
 
         //文本颜色
         SpinnerModel readerLineColorRedChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getRed(), 0, 255, 1);
@@ -155,8 +180,12 @@ public class ReaderWindow implements Disposable {
         readerLineColorBlueChannelSpinner.setModel(readerLineColorBlueChannelSpinnerModel);
         readerLineColorAlphaChannelSpinner.setModel(readerLineColorAlphaChannelSpinnerModel);
         ChangeListener readLineColorChangeListener = e -> {
-            Color newColor = new Color((int) readerLineColorRedChannelSpinner.getValue(), (int) readerLineColorGreenChannelSpinner.getValue(),
-                    (int) readerLineColorBlueChannelSpinner.getValue(), (int) readerLineColorAlphaChannelSpinner.getValue());
+            int a = (int) readerLineColorAlphaChannelSpinner.getValue();
+            int r = (int) readerLineColorRedChannelSpinner.getValue();
+            int g = (int) readerLineColorGreenChannelSpinner.getValue();
+            int b = (int) readerLineColorBlueChannelSpinner.getValue();
+            int color = (a & 0xFF) << 24 | (r & 0xFF) << 16 | (g & 0xFF) << 8 | (b & 0xFF);
+            JBColor newColor = new JBColor(color, color);
             TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_COLOR, newColor, ReaderWindow.this);
         };
         readerLineColorRedChannelSpinner.addChangeListener(readLineColorChangeListener);
@@ -164,6 +193,44 @@ public class ReaderWindow implements Disposable {
         readerLineColorBlueChannelSpinner.addChangeListener(readLineColorChangeListener);
         readerLineColorAlphaChannelSpinner.addChangeListener(readLineColorChangeListener);
 
+        //编辑器背景偏移类型
+        editorBackgroundOffsetTypeButtonGroup = new ButtonGroup();
+        editorBackgroundOffsetTypeButtonGroup.add(atLeftTopRadioButton);
+        editorBackgroundOffsetTypeButtonGroup.add(atLeftBottomRadioButton);
+        editorBackgroundOffsetTypeButtonGroup.add(atRightTopRadioButton);
+        editorBackgroundOffsetTypeButtonGroup.add(atRightBottomRadioButton);
+        updateEditorBackgroundOffsetTypeButtonGroup(TextReaderConfig.getEditBackgroundOffsetType());
+        ActionListener editorBackgroundOffsetTypeRadioButtonActionListener = e -> {
+            if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atLeftTopRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        TextReaderConfig.EditBackgroundOffsetType.LEFT_TOP, ReaderWindow.this);
+            }else if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atLeftBottomRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        TextReaderConfig.EditBackgroundOffsetType.LEFT_BOTTOM, ReaderWindow.this);
+            }else if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atRightTopRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        TextReaderConfig.EditBackgroundOffsetType.RIGHT_TOP, ReaderWindow.this);
+            } if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atRightBottomRadioButton.getModel())){
+                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        TextReaderConfig.EditBackgroundOffsetType.RIGHT_BOTTOM, ReaderWindow.this);
+            }
+        };
+        atLeftTopRadioButton.addActionListener(editorBackgroundOffsetTypeRadioButtonActionListener);
+        atLeftBottomRadioButton.addActionListener(editorBackgroundOffsetTypeRadioButtonActionListener);
+        atRightTopRadioButton.addActionListener(editorBackgroundOffsetTypeRadioButtonActionListener);
+        atRightBottomRadioButton.addActionListener(editorBackgroundOffsetTypeRadioButtonActionListener);
+
+        //编辑器背景偏移量X
+        SpinnerModel editBackgroundOffsetXSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getEditBackgroundOffsetX(), 0, 10000, 1);
+        offsetXSpinner.setModel(editBackgroundOffsetXSpinnerModel);
+        editBackgroundOffsetXSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_X,
+                offsetXSpinner.getValue(), ReaderWindow.this));
+
+        //编辑器背景偏移量Y
+        SpinnerModel editBackgroundOffsetYSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getEditBackgroundOffsetY(), 0, 10000, 1);
+        offsetYSpinner.setModel(editBackgroundOffsetYSpinnerModel);
+        editBackgroundOffsetYSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_Y,
+                offsetYSpinner.getValue(), ReaderWindow.this));
 
         //添加文件
         fileButton.addActionListener(e -> {
@@ -309,7 +376,7 @@ public class ReaderWindow implements Disposable {
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLineAtStatusBar());
+            ReaderLineUtil.clear(project, TextReaderConfig.getShowReaderLineType());
         };
         TextReaderEventListener configChangeEventListener = event -> {
             ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
@@ -341,18 +408,26 @@ public class ReaderWindow implements Disposable {
                 case READER_LINE_SIZE:
                     if(notSelf) readerLineSizeSpinner.setValue(event.getData());
                     break;
-                case SHOW_READER_LINT_AT_STATUS_BAR:
-                    if(notSelf) showReaderLineAtRadioButtonGroup.setSelected((boolean)event.getData()?
-                            atStatusBarRadioButton.getModel() : atHiddenNotifyRadioButton.getModel(), true);
+                case SHOW_READER_LINE_TYPE:
+                    if(notSelf) updateShowReaderLineTypeButtonGroup((TextReaderConfig.ShowReaderLineType) event.getData());
                     break;
                 case READER_LINE_COLOR:
                     if(notSelf) {
-                        Color color = (Color) event.getData();
+                        JBColor color = (JBColor) event.getData();
                         readerLineColorRedChannelSpinner.setValue(color.getRed());
                         readerLineColorGreenChannelSpinner.setValue(color.getGreen());
                         readerLineColorBlueChannelSpinner.setValue(color.getBlue());
                         readerLineColorAlphaChannelSpinner.setValue(color.getAlpha());
                     }
+                    break;
+                case EDITOR_BACKGROUND_OFFSET_TYPE:
+                    if(notSelf) updateEditorBackgroundOffsetTypeButtonGroup((TextReaderConfig.EditBackgroundOffsetType) event.getData());
+                    break;
+                case EDITOR_BACKGROUND_OFFSET_X:
+                    if(notSelf) offsetXSpinner.setValue(event.getData());
+                    break;
+                case EDITOR_BACKGROUND_OFFSET_Y:
+                    if(notSelf) offsetYSpinner.setValue(event.getData());
                     break;
             }
         };
@@ -443,6 +518,36 @@ public class ReaderWindow implements Disposable {
         catch (IOException e){
             e.printStackTrace();
             sendNotify(Notification.TITLE_READ_CHAPTER_ERROR, e.getLocalizedMessage(), NotificationType.ERROR);
+        }
+    }
+
+    private void updateShowReaderLineTypeButtonGroup(TextReaderConfig.ShowReaderLineType showReaderLineType){
+        switch (showReaderLineType){
+            case NOTIFY:
+                showReaderLineAtRadioButtonGroup.setSelected(atHiddenNotifyRadioButton.getModel(), true);
+                break;
+            case STATUS_BAR:
+                showReaderLineAtRadioButtonGroup.setSelected(atStatusBarRadioButton.getModel(), true);
+                break;
+            case EDITOR_BACKGROUND:
+                showReaderLineAtRadioButtonGroup.setSelected(atEditorBackgroundRadioButton.getModel(), true);
+                break;
+        }
+    }
+    private void updateEditorBackgroundOffsetTypeButtonGroup(TextReaderConfig.EditBackgroundOffsetType editBackgroundOffsetType){
+        switch (editBackgroundOffsetType){
+            case LEFT_TOP:
+                editorBackgroundOffsetTypeButtonGroup.setSelected(atLeftTopRadioButton.getModel(), true);
+                break;
+            case LEFT_BOTTOM:
+                editorBackgroundOffsetTypeButtonGroup.setSelected(atLeftBottomRadioButton.getModel(), true);
+                break;
+            case RIGHT_TOP:
+                editorBackgroundOffsetTypeButtonGroup.setSelected(atRightTopRadioButton.getModel(), true);
+                break;
+            case RIGHT_BOTTOM:
+                editorBackgroundOffsetTypeButtonGroup.setSelected(atRightBottomRadioButton.getModel(), true);
+                break;
         }
     }
 

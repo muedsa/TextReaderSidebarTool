@@ -66,11 +66,11 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
         ReaderLineWidgetHolder.put(project, this);
         listener = event -> {
             ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
-            if(TextReaderConfig.ConfigKey.SHOW_READER_LINT_AT_STATUS_BAR.equals(configChangeEvent.getConfigKey())) {
-                boolean show = (boolean) configChangeEvent.getData();
+            if(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE.equals(configChangeEvent.getConfigKey())) {
+                TextReaderConfig.ShowReaderLineType showReaderLineType = (TextReaderConfig.ShowReaderLineType) configChangeEvent.getData();
                 setLine(DEFAULT_LINE);
-                if(show){
-                    ReaderLineUtil.clear(project, TextReaderConfig.isShowReaderLineAtStatusBar());
+                if(TextReaderConfig.ShowReaderLineType.STATUS_BAR.equals(showReaderLineType)){
+                    ReaderLineUtil.clear(project, TextReaderConfig.getShowReaderLineType());
                     StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
                     if(widgetFactory != null) {
                         ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);
