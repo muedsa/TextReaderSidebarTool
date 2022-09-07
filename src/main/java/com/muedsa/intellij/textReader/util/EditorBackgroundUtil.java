@@ -17,7 +17,7 @@ public class EditorBackgroundUtil {
             ConfigChangeEvent event = (ConfigChangeEvent) e;
             if(TextReaderConfig.ConfigKey.FONT_FAMILY.equals(event.getConfigKey())
                 || TextReaderConfig.ConfigKey.FONT_SIZE.equals(event.getConfigKey())){
-                FONT = new Font((String) e.getData(), Font.PLAIN, TextReaderConfig.getFontSize());
+                FONT = new Font(TextReaderConfig.getFontFamily(), Font.PLAIN, TextReaderConfig.getFontSize());
             }
         });
     }
