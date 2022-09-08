@@ -1,5 +1,6 @@
 package com.muedsa.intellij.textReader.composes;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.CustomStatusBarWidget;
@@ -11,10 +12,10 @@ import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetSettings;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetWrapper;
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager;
 import com.intellij.util.Consumer;
-import com.muedsa.intellij.textReader.core.TextReaderCore;
-import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
-import com.muedsa.intellij.textReader.core.event.ConfigChangeEvent;
-import com.muedsa.intellij.textReader.core.event.TextReaderEventListener;
+import com.muedsa.intellij.textReader.bus.ConfigChangeNotifier;
+import com.muedsa.intellij.textReader.config.ConfigKey;
+import com.muedsa.intellij.textReader.config.ShowReaderLineType;
+import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
 import com.muedsa.intellij.textReader.util.ReaderLineUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
     private String line = DEFAULT_LINE;
     private ReaderLineComponent component;
     private Project project;
-    private TextReaderEventListener listener;
+    private TextReaderConfigStateService config;
 
     public final class ReaderLineComponent extends TextPanel implements StatusBarWidgetWrapper{
 
@@ -63,25 +64,30 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
     public ReaderLineWidget(Project project) {
         component = new ReaderLineComponent(this);
         this.project = project;
+        config = TextReaderConfigStateService.getInstance();
         ReaderLineWidgetHolder.put(project, this);
-        listener = event -> {
-            ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
-            if(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE.equals(configChangeEvent.getConfigKey())) {
-                TextReaderConfig.ShowReaderLineType showReaderLineType = (TextReaderConfig.ShowReaderLineType) configChangeEvent.getData();
-                setLine(DEFAULT_LINE);
-                if(TextReaderConfig.ShowReaderLineType.STATUS_BAR.equals(showReaderLineType)){
-                    ReaderLineUtil.clear(project, TextReaderConfig.getShowReaderLineType());
-                    StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
-                    if(widgetFactory != null) {
-                        ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);
+        initConfigMessageBusSubscribe();
+    }
+
+    private void initConfigMessageBusSubscribe(){
+        ApplicationManager.getApplication().getMessageBus()
+                .connect(this)
+                .subscribe(ConfigChangeNotifier.CHANGE_ACTION_TOPIC, ((key, data, source) -> {
+                    if(ConfigKey.SHOW_READER_LINE_TYPE.equals(key)) {
+                        ShowReaderLineType showReaderLineType = (ShowReaderLineType) data;
+                        setLine(DEFAULT_LINE);
+                        if(ShowReaderLineType.STATUS_BAR.equals(showReaderLineType)){
+                            ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
+                            StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
+                            if(widgetFactory != null) {
+                                ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);
+                            }
+                        }
+                    }else if(ConfigKey.READER_LINE_COLOR.equals(key)){
+                        Color color = (Color) data;
+                        component.setForeground(color);
                     }
-                }
-            }else if(TextReaderConfig.ConfigKey.READER_LINE_COLOR.equals(configChangeEvent.getConfigKey())){
-                Color color = (Color) configChangeEvent.getData();
-                component.setForeground(color);
-            }
-        };
-        TextReaderCore.getInstance().getEventManage().addListener(ConfigChangeEvent.EVENT_ID, listener);
+                }));
     }
 
     public void setLine(String text) {
@@ -95,7 +101,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
 
     @Override
     public void install(@NotNull StatusBar statusBar) {
-        component.setForeground(TextReaderConfig.getReaderLineColor());
+        component.setForeground(config.getReaderLineColor());
     }
 
     @Override
@@ -135,7 +141,6 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
 
     @Override
     public void dispose() {
-        TextReaderCore.getInstance().getEventManage().removeListener(ConfigChangeEvent.EVENT_ID, listener);
         ReaderLineWidgetHolder.remove(project);
         this.line = null;
     }

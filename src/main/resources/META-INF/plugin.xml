@@ -144,7 +144,8 @@
 
 
   <extensions defaultExtensionNs="com.intellij">
-    <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderStateService"/>
+    <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderChapterStateService"/>
+    <applicationService serviceImplementation="com.muedsa.intellij.textReader.state.TextReaderConfigStateService"/>
     <toolWindow
         id="TextReaderToolWindow"
         anchor="bottom"

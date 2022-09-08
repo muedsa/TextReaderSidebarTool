@@ -4,16 +4,17 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.components.StoragePathMacros;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.muedsa.intellij.textReader.core.Chapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Vector;
-@State(name = "com.muedsa.intellij.textReader.chapter", storages = {@Storage(value = "$APP_CONFIG$/muedsa_tr.xml")})
-public class TextReaderStateService implements PersistentStateComponent<TextReaderStateService> {
+@State(name = "com.muedsa.intellij.textReader.ChapterConfig", storages = {@Storage(value = StoragePathMacros.NON_ROAMABLE_FILE)})
+public class TextReaderChapterStateService implements PersistentStateComponent<TextReaderChapterStateService> {
 
-    public static TextReaderStateService getInstance() {
-       return ApplicationManager.getApplication().getService(TextReaderStateService.class);
+    public static TextReaderChapterStateService getInstance() {
+       return ApplicationManager.getApplication().getService(TextReaderChapterStateService.class);
     }
 
     private Vector<Chapter> chapters = new Vector<>();
@@ -37,12 +38,12 @@ public class TextReaderStateService implements PersistentStateComponent<TextRead
     }
 
     @Override
-    public TextReaderStateService getState() {
+    public TextReaderChapterStateService getState() {
         return this;
     }
 
     @Override
-    public void loadState(@NotNull TextReaderStateService state) {
+    public void loadState(@NotNull TextReaderChapterStateService state) {
         XmlSerializerUtil.copyBean(state, this);
     }
 }

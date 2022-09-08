@@ -2,7 +2,7 @@ package com.muedsa.intellij.textReader.core.event;
 
 public class ChapterChangeEvent extends TextReaderEvent{
 
-    public final static String EVENT_ID = "ChangeChapterEvent";
+    public final static String EVENT_ID = ChapterChangeEvent.class.getSimpleName();
 
     public ChapterChangeEvent(Object data) {
         super(data);

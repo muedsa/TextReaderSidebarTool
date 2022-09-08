@@ -7,9 +7,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.muedsa.intellij.textReader.composes.ReaderLineWidget;
 import com.muedsa.intellij.textReader.composes.ReaderLineWidgetHolder;
+import com.muedsa.intellij.textReader.config.ShowReaderLineType;
+import com.muedsa.intellij.textReader.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
-import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.notify.Notification;
+import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -19,38 +21,38 @@ public class ReaderLineUtil {
 
     private static final Set<Project> historyFlag = new HashSet<>();
     private static Project LAST_PROJECT = null;
-    private static TextReaderConfig.ShowReaderLineType SHOW_READER_LINE_TYPE_FROM_LAST = TextReaderConfig.getShowReaderLineType();
+    private static ShowReaderLineType SHOW_READER_LINE_TYPE_FROM_LAST = null;
 
-    public static void nextLine(Project project) {
+    public static void nextLine(TextReaderConfig config, Project project) {
         String line;
         NotificationType type;
         TextReaderCore textReaderCore = TextReaderCore.getInstance();
         if(textReaderCore.isReady()){
             type = NotificationType.INFORMATION;
-            line = textReaderCore.nextLine();
+            line = textReaderCore.nextLine(config.getReaderLineSize());
         }else{
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
         }
-        dispatchLineAction(project, line, type);
+        dispatchLineAction(line, type, config, project);
     }
 
-    public static void previousLine(Project project) {
+    public static void previousLine(TextReaderConfigStateService config, Project project) {
         String line;
         NotificationType type;
         TextReaderCore textReaderCore = TextReaderCore.getInstance();
         if(textReaderCore.isReady()){
             type = NotificationType.INFORMATION;
-            line = textReaderCore.previousLine();
+            line = textReaderCore.previousLine(config.getReaderLineSize());
         }else{
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
         }
-        dispatchLineAction(project, line, type);
+        dispatchLineAction(line, type, config, project);
     }
 
-    private static void dispatchLineAction(Project project, String line, NotificationType type) {
-        switch (TextReaderConfig.getShowReaderLineType()){
+    private static void dispatchLineAction(String line, NotificationType type, TextReaderConfig config, Project project) {
+        switch (config.getShowReaderLineType()){
             case NOTIFY:
                 Notification.sendHiddenNotify(project, line, type);
                 break;
@@ -63,49 +65,49 @@ public class ReaderLineUtil {
             case EDITOR_BACKGROUND:
                 Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                 if(editor != null){
-                    EditorBackgroundUtil.setTextBackground(editor, line);
+                    UiUtil.setEditorTextBackground(editor, line, config);
                 }
                 break;
         }
-        afterAction(project);
+        afterAction(project, config);
     }
 
-    public static void clear(Project project, TextReaderConfig.ShowReaderLineType showReaderLineType) {
+    public static void clear(ShowReaderLineType showReaderLineType, TextReaderConfig config, Project project) {
         switch (showReaderLineType){
             case NOTIFY:
-                ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
-                if(readerLineWidget != null){
-                    readerLineWidget.setLine(ReaderLineWidget.DEFAULT_LINE);
-                }
-                break;
-            case STATUS_BAR:
                 int i = 0;
                 while (i < 40){
                     Notification.sendHiddenNotify(project, Notification.MSG_DOT, NotificationType.INFORMATION);
                     i++;
                 }
                 break;
+            case STATUS_BAR:
+                ReaderLineWidget readerLineWidget = ReaderLineWidgetHolder.get(project);
+                if(readerLineWidget != null){
+                    readerLineWidget.setLine(ReaderLineWidget.DEFAULT_LINE);
+                }
+                break;
             case EDITOR_BACKGROUND:
                 Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                 if(editor != null){
-                    EditorBackgroundUtil.setTextBackground(editor, null);
+                    UiUtil.setEditorTextBackground(editor, null, config);
                 }
                 break;
         }
     }
 
-    private static void afterAction(Project project) {
+    private static void afterAction(Project project, TextReaderConfig config) {
         if(!historyFlag.contains(project)){
             historyFlag.add(project);
             registerClearHistoryDispose(project);
         }
         if(LAST_PROJECT != null
                 && (!Objects.equals(project, LAST_PROJECT)
-                    || SHOW_READER_LINE_TYPE_FROM_LAST != TextReaderConfig.getShowReaderLineType())){
-            clear(LAST_PROJECT, SHOW_READER_LINE_TYPE_FROM_LAST);
+                    || SHOW_READER_LINE_TYPE_FROM_LAST != config.getShowReaderLineType())){
+            clear(SHOW_READER_LINE_TYPE_FROM_LAST, config, LAST_PROJECT);
         }
         LAST_PROJECT = project;
-        SHOW_READER_LINE_TYPE_FROM_LAST = TextReaderConfig.getShowReaderLineType();
+        SHOW_READER_LINE_TYPE_FROM_LAST = config.getShowReaderLineType();
     }
 
     public static void registerClearHistoryDispose(Project project){

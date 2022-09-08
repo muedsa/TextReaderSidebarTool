@@ -1,13 +1,11 @@
 package com.muedsa.intellij.textReader.core;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.WindowManager;
-import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.core.event.ChapterChangeEvent;
 import com.muedsa.intellij.textReader.core.event.ChaptersClearEvent;
 import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
 import com.muedsa.intellij.textReader.core.util.ChapterUtil;
-import com.muedsa.intellij.textReader.state.TextReaderStateService;
+import com.muedsa.intellij.textReader.state.TextReaderChapterStateService;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -18,7 +16,7 @@ public class TextReaderCore {
 
     private final static TextReaderCore INSTANCE = new TextReaderCore();
     private final TextReaderEventManage eventManage = new TextReaderEventManage();
-    private TextReaderStateService textReaderStateService;
+    private TextReaderChapterStateService textReaderChapterStateService;
 
     private TextFile textFile;
     private Vector<Chapter> chapterList = new Vector<>(0);
@@ -32,13 +30,13 @@ public class TextReaderCore {
     }
 
     public void initStateService(){
-        if(textReaderStateService == null){
-            textReaderStateService = TextReaderStateService.getInstance();
-            if(textReaderStateService != null && textReaderStateService.getFilePath() != null && textReaderStateService.getChapters() != null){
+        if(textReaderChapterStateService == null){
+            textReaderChapterStateService = TextReaderChapterStateService.getInstance();
+            if(textReaderChapterStateService != null && textReaderChapterStateService.getFilePath() != null && textReaderChapterStateService.getChapters() != null){
                 try {
-                    String filePath = textReaderStateService.getFilePath();
+                    String filePath = textReaderChapterStateService.getFilePath();
                     if(StringUtils.isNotBlank(filePath)){
-                        initWithFileAndChapters(filePath, textReaderStateService.getChapters());
+                        initWithFileAndChapters(filePath, textReaderChapterStateService.getChapters());
                     }
                 }
                 catch (IOException error){
@@ -99,18 +97,18 @@ public class TextReaderCore {
         return index;
     }
 
-    public String readChapterContent() throws IOException {
+    public String readChapterContent(int paragraphSpace) throws IOException {
         String text = "";
         Chapter chapter = getChapter();
         if(chapter != null){
-            text = ChapterUtil.formatChapterContent(textFile, chapter);
+            text = ChapterUtil.formatChapterContent(textFile, chapter, paragraphSpace);
             noBlankChapterText = text.replaceFirst("\n", "##").replaceAll("\\s*", "");
             positionInChapter = 0;
         }
         return text;
     }
 
-    public String nextLine(){
+    public String nextLine(int lineSize){
         String line;
         if(StringUtils.isEmpty(noBlankChapterText) || positionInChapter > noBlankChapterText.length()){
             if(nextChapter() < 0){
@@ -118,30 +116,30 @@ public class TextReaderCore {
                 return line;
             }
         }
-        line = StringUtils.mid(noBlankChapterText, positionInChapter, TextReaderConfig.getReaderLineSize());
-        positionInChapter += TextReaderConfig.getReaderLineSize();
+        line = StringUtils.mid(noBlankChapterText, positionInChapter, lineSize);
+        positionInChapter += lineSize;
         if(StringUtils.isAllBlank(line)){
-            line = nextLine();
+            line = nextLine(lineSize);
         }
         return line;
     }
 
-    public String previousLine(){
+    public String previousLine(int lineSize){
         String line;
-        if(positionInChapter - TextReaderConfig.getReaderLineSize() == 0){
+        if(positionInChapter - lineSize == 0){
             if(previousChapter() < 0){
                 line = "读取上一章失败!";
                 positionInChapter = 0;
                 return line;
             }
-            positionInChapter = noBlankChapterText.length() - TextReaderConfig.getReaderLineSize();
+            positionInChapter = noBlankChapterText.length() - lineSize;
         }else{
-            positionInChapter -= TextReaderConfig.getReaderLineSize() * 2;
+            positionInChapter -= lineSize * 2;
             if(positionInChapter < 0){
                 positionInChapter = 0;
             }
         }
-        line = nextLine();
+        line = nextLine(lineSize);
         return line;
     }
 
@@ -177,8 +175,8 @@ public class TextReaderCore {
     }
 
     private void saveState(){
-        textReaderStateService.setFilePath(textFile == null? "" : textFile.getFilePath());
-        textReaderStateService.setChapters(chapterList);
+        textReaderChapterStateService.setFilePath(textFile == null? "" : textFile.getFilePath());
+        textReaderChapterStateService.setChapters(chapterList);
     }
 
     public boolean isReady(){

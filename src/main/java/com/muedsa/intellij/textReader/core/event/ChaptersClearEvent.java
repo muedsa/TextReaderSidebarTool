@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 public class ChaptersClearEvent extends TextReaderEvent{
 
-    public final static String EVENT_ID = "ClearChaptersEvent";
+    public final static String EVENT_ID = ChaptersClearEvent.class.getSimpleName();
 
     public ChaptersClearEvent(@Nullable Object data) {
         super(data);

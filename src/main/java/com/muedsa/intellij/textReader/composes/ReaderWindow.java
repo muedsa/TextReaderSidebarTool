@@ -2,20 +2,27 @@ package com.muedsa.intellij.textReader.composes;
 
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
+import com.muedsa.intellij.textReader.bus.ConfigChangeNotifier;
+import com.muedsa.intellij.textReader.config.ConfigKey;
+import com.muedsa.intellij.textReader.config.EditorBackgroundOffsetType;
+import com.muedsa.intellij.textReader.config.ShowReaderLineType;
 import com.muedsa.intellij.textReader.core.Chapter;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
-import com.muedsa.intellij.textReader.core.config.TextReaderConfig;
-import com.muedsa.intellij.textReader.core.event.*;
+import com.muedsa.intellij.textReader.core.event.ChapterChangeEvent;
+import com.muedsa.intellij.textReader.core.event.ChaptersClearEvent;
+import com.muedsa.intellij.textReader.core.event.TextReaderEventListener;
+import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.notify.Notification;
+import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
 import com.muedsa.intellij.textReader.util.ReaderLineUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +47,7 @@ import java.util.stream.Collectors;
 
 public class ReaderWindow implements Disposable {
     private final Project project;
-    private final ToolWindow toolWindow;
+    private final TextReaderConfigStateService config;
     private JPanel readerPanel;
     private JBList<Chapter> titleList;
     private JButton fileButton;
@@ -79,15 +86,28 @@ public class ReaderWindow implements Disposable {
     private JSpinner offsetYSpinner;
     private final TextReaderCore textReaderCore;
 
+    private int id;
 
-    public ReaderWindow(Project project, ToolWindow toolWindow) {
+    public int getId(){
+        return id;
+    }
+
+    public static int NUM = 0;
+    private synchronized void initId(){
+        NUM++;
+        id = NUM;
+    }
+
+    public ReaderWindow(Project project) {
+        initId();
         this.project = project;
-        this.toolWindow = toolWindow;
+        this.config = TextReaderConfigStateService.getInstance();
         this.textReaderCore = TextReaderCore.getInstance();
         createUIComponents();
         init();
         updateRegex();
         eventRegister();
+        initConfigMessageBusSubscribe();
         if(textReaderCore.getChapters().isEmpty()){
             this.searchTextField.setEnabled(true);
         }
@@ -101,45 +121,45 @@ public class ReaderWindow implements Disposable {
         fontFamilyEl.setModel(comboBoxModel);
         fontFamilyEl.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_FAMILY, e.getItem(), ReaderWindow.this);
+                config.changeConfig(ConfigKey.FONT_FAMILY, e.getItem(), ReaderWindow.this);
             }
         });
-        updateFontFamilyEl(TextReaderConfig.getFontFamily());
+        updateFontFamilyEl(config.getFontFamily());
 
         //字体大小
-        SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFontSize(), 0, 100, 1);
+        SpinnerModel fontSizeSpinnerModel = new SpinnerNumberModel(config.getFontSize(), 0, 100, 1);
         fontSizeSpinner.setModel(fontSizeSpinnerModel);
-        fontSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FONT_SIZE,
+        fontSizeSpinner.addChangeListener(e -> config.changeConfig(ConfigKey.FONT_SIZE,
                 fontSizeSpinner.getValue(), ReaderWindow.this));
 
         //字体行间距
-        SpinnerModel lineSpaceSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getLineSpace(), 0, 2.5, 0.1);
+        SpinnerModel lineSpaceSpinnerModel = new SpinnerNumberModel(config.getLineSpace(), 0, 2.5, 0.1);
         lineSpaceSpinner.setModel(lineSpaceSpinnerModel);
-        lineSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.LINE_SPACE,
+        lineSpaceSpinner.addChangeListener(e -> config.changeConfig(ConfigKey.LINE_SPACE,
                 lineSpaceSpinner.getValue(), ReaderWindow.this));
 
         //首行缩进
-        SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getFirstLineIndent(), 0, 4, 1);
+        SpinnerModel firstLineIndentSpinnerModel = new SpinnerNumberModel(config.getFirstLineIndent(), 0, 4, 1);
         firstLineIndentSpinner.setModel(firstLineIndentSpinnerModel);
-        firstLineIndentSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.FIRST_LINE_INDENT,
+        firstLineIndentSpinner.addChangeListener(e -> config.changeConfig(ConfigKey.FIRST_LINE_INDENT,
                 firstLineIndentSpinner.getValue(), ReaderWindow.this));
 
         //段落间隔
-        SpinnerModel paragraphSpaceSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getParagraphSpace(), 0, 4, 1);
+        SpinnerModel paragraphSpaceSpinnerModel = new SpinnerNumberModel(config.getParagraphSpace(), 0, 4, 1);
         paragraphSpaceSpinner.setModel(paragraphSpaceSpinnerModel);
-        paragraphSpaceSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.PARAGRAPH_SPACE,
+        paragraphSpaceSpinner.addChangeListener(e -> config.changeConfig(ConfigKey.PARAGRAPH_SPACE,
                 paragraphSpaceSpinner.getValue(), ReaderWindow.this));
 
         //标题解析最大字数限制设置
-        SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getMaxTitleLineSize(), 1, 200, 1);
+        SpinnerModel maxLineSizeSpinnerModel = new SpinnerNumberModel(config.getMaxTitleLineSize(), 1, 200, 1);
         maxTitleLineSizeSpinner.setModel(maxLineSizeSpinnerModel);
-        maxTitleLineSizeSpinner.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.MAX_TITLE_LINE_SIZE,
+        maxTitleLineSizeSpinner.addChangeListener(e -> config.changeConfig(ConfigKey.MAX_TITLE_LINE_SIZE,
                 maxTitleLineSizeSpinner.getValue(), ReaderWindow.this));
 
         //每行字数
-        SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineSize(), 0, 100, 1);
+        SpinnerModel lineSizeSpinnerModel = new SpinnerNumberModel(config.getReaderLineSize(), 0, 100, 1);
         readerLineSizeSpinner.setModel(lineSizeSpinnerModel);
-        lineSizeSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_SIZE,
+        lineSizeSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.READER_LINE_SIZE,
                 readerLineSizeSpinner.getValue(), ReaderWindow.this));
 
         //按行读取时展示的位置
@@ -147,17 +167,17 @@ public class ReaderWindow implements Disposable {
         showReaderLineAtRadioButtonGroup.add(atHiddenNotifyRadioButton);
         showReaderLineAtRadioButtonGroup.add(atStatusBarRadioButton);
         showReaderLineAtRadioButtonGroup.add(atEditorBackgroundRadioButton);
-        updateShowReaderLineTypeButtonGroup(TextReaderConfig.getShowReaderLineType());
+        updateShowReaderLineTypeButtonGroup(config.getShowReaderLineType());
         ActionListener showReaderLineAtRadioButtonActionListener = e -> {
             if(showReaderLineAtRadioButtonGroup.getSelection().equals(atHiddenNotifyRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE,
-                        TextReaderConfig.ShowReaderLineType.NOTIFY, ReaderWindow.this);
+                config.changeConfig(ConfigKey.SHOW_READER_LINE_TYPE,
+                        ShowReaderLineType.NOTIFY, ReaderWindow.this);
             }else if(showReaderLineAtRadioButtonGroup.getSelection().equals(atStatusBarRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE,
-                        TextReaderConfig.ShowReaderLineType.STATUS_BAR, ReaderWindow.this);
+                config.changeConfig(ConfigKey.SHOW_READER_LINE_TYPE,
+                        ShowReaderLineType.STATUS_BAR, ReaderWindow.this);
             }else if(showReaderLineAtRadioButtonGroup.getSelection().equals(atEditorBackgroundRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.SHOW_READER_LINE_TYPE,
-                        TextReaderConfig.ShowReaderLineType.EDITOR_BACKGROUND, ReaderWindow.this);
+                config.changeConfig(ConfigKey.SHOW_READER_LINE_TYPE,
+                        ShowReaderLineType.EDITOR_BACKGROUND, ReaderWindow.this);
             }
         };
         atHiddenNotifyRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
@@ -165,10 +185,10 @@ public class ReaderWindow implements Disposable {
         atEditorBackgroundRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
 
         //文本颜色
-        SpinnerModel readerLineColorRedChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getRed(), 0, 255, 1);
-        SpinnerModel readerLineColorGreenChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getGreen(), 0, 255, 1);
-        SpinnerModel readerLineColorBlueChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getGreen(), 0, 255, 1);
-        SpinnerModel readerLineColorAlphaChannelSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getReaderLineColor().getAlpha(), 0, 255, 1);
+        SpinnerModel readerLineColorRedChannelSpinnerModel = new SpinnerNumberModel(config.getReaderLineColor().getRed(), 0, 255, 1);
+        SpinnerModel readerLineColorGreenChannelSpinnerModel = new SpinnerNumberModel(config.getReaderLineColor().getGreen(), 0, 255, 1);
+        SpinnerModel readerLineColorBlueChannelSpinnerModel = new SpinnerNumberModel(config.getReaderLineColor().getGreen(), 0, 255, 1);
+        SpinnerModel readerLineColorAlphaChannelSpinnerModel = new SpinnerNumberModel(config.getReaderLineColor().getAlpha(), 0, 255, 1);
         readerLineColorRedChannelSpinner.setModel(readerLineColorRedChannelSpinnerModel);
         readerLineColorGreenChannelSpinner.setModel(readerLineColorGreenChannelSpinnerModel);
         readerLineColorBlueChannelSpinner.setModel(readerLineColorBlueChannelSpinnerModel);
@@ -180,7 +200,7 @@ public class ReaderWindow implements Disposable {
             int b = (int) readerLineColorBlueChannelSpinner.getValue();
             int color = (a & 0xFF) << 24 | (r & 0xFF) << 16 | (g & 0xFF) << 8 | (b & 0xFF);
             JBColor newColor = new JBColor(color, color);
-            TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.READER_LINE_COLOR, newColor, ReaderWindow.this);
+            config.changeConfig(ConfigKey.READER_LINE_COLOR, newColor, ReaderWindow.this);
         };
         readerLineColorRedChannelSpinner.addChangeListener(readLineColorChangeListener);
         readerLineColorGreenChannelSpinner.addChangeListener(readLineColorChangeListener);
@@ -193,20 +213,20 @@ public class ReaderWindow implements Disposable {
         editorBackgroundOffsetTypeButtonGroup.add(atLeftBottomRadioButton);
         editorBackgroundOffsetTypeButtonGroup.add(atRightTopRadioButton);
         editorBackgroundOffsetTypeButtonGroup.add(atRightBottomRadioButton);
-        updateEditorBackgroundOffsetTypeButtonGroup(TextReaderConfig.getEditBackgroundOffsetType());
+        updateEditorBackgroundOffsetTypeButtonGroup(config.getEditorBackgroundOffsetType());
         ActionListener editorBackgroundOffsetTypeRadioButtonActionListener = e -> {
             if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atLeftTopRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
-                        TextReaderConfig.EditBackgroundOffsetType.LEFT_TOP, ReaderWindow.this);
+                config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        EditorBackgroundOffsetType.LEFT_TOP, ReaderWindow.this);
             }else if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atLeftBottomRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
-                        TextReaderConfig.EditBackgroundOffsetType.LEFT_BOTTOM, ReaderWindow.this);
+                config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        EditorBackgroundOffsetType.LEFT_BOTTOM, ReaderWindow.this);
             }else if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atRightTopRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
-                        TextReaderConfig.EditBackgroundOffsetType.RIGHT_TOP, ReaderWindow.this);
+                config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        EditorBackgroundOffsetType.RIGHT_TOP, ReaderWindow.this);
             } if(editorBackgroundOffsetTypeButtonGroup.getSelection().equals(atRightBottomRadioButton.getModel())){
-                TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
-                        TextReaderConfig.EditBackgroundOffsetType.RIGHT_BOTTOM, ReaderWindow.this);
+                config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_TYPE,
+                        EditorBackgroundOffsetType.RIGHT_BOTTOM, ReaderWindow.this);
             }
         };
         atLeftTopRadioButton.addActionListener(editorBackgroundOffsetTypeRadioButtonActionListener);
@@ -215,15 +235,15 @@ public class ReaderWindow implements Disposable {
         atRightBottomRadioButton.addActionListener(editorBackgroundOffsetTypeRadioButtonActionListener);
 
         //编辑器背景偏移量X
-        SpinnerModel editBackgroundOffsetXSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getEditBackgroundOffsetX(), 0, 10000, 1);
+        SpinnerModel editBackgroundOffsetXSpinnerModel = new SpinnerNumberModel(config.getEditBackgroundOffsetX(), 0, 10000, 1);
         offsetXSpinner.setModel(editBackgroundOffsetXSpinnerModel);
-        editBackgroundOffsetXSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_X,
+        editBackgroundOffsetXSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_X,
                 offsetXSpinner.getValue(), ReaderWindow.this));
 
         //编辑器背景偏移量Y
-        SpinnerModel editBackgroundOffsetYSpinnerModel = new SpinnerNumberModel(TextReaderConfig.getEditBackgroundOffsetY(), 0, 10000, 1);
+        SpinnerModel editBackgroundOffsetYSpinnerModel = new SpinnerNumberModel(config.getEditBackgroundOffsetY(), 0, 10000, 1);
         offsetYSpinner.setModel(editBackgroundOffsetYSpinnerModel);
-        editBackgroundOffsetYSpinnerModel.addChangeListener(e -> TextReaderConfig.setConfigValue(TextReaderConfig.ConfigKey.EDITOR_BACKGROUND_OFFSET_Y,
+        editBackgroundOffsetYSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_Y,
                 offsetYSpinner.getValue(), ReaderWindow.this));
 
         //添加文件
@@ -356,11 +376,7 @@ public class ReaderWindow implements Disposable {
             if(chapter != null){
                 titleList.setSelectedValue(chapter, true);
             }
-            if(textReaderCore.getChapters().isEmpty()){
-                searchTextField.setEnabled(false);
-            }else{
-                searchTextField.setEnabled(true);
-            }
+            searchTextField.setEnabled(!textReaderCore.getChapters().isEmpty());
             setTextContent();
         };
         TextReaderEventListener chaptersClearEventListener = event -> {
@@ -370,70 +386,72 @@ public class ReaderWindow implements Disposable {
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            ReaderLineUtil.clear(project, TextReaderConfig.getShowReaderLineType());
-        };
-        TextReaderEventListener configChangeEventListener = event -> {
-            ConfigChangeEvent configChangeEvent = (ConfigChangeEvent) event;
-            boolean notSelf = Objects.equals(ReaderWindow.this, event.getTag());
-            switch (configChangeEvent.getConfigKey()){
-                case FONT_FAMILY:
-                    if(notSelf) updateFontFamilyEl((String) event.getData());
-                    updateEditorFontFamily();
-                    break;
-                case FONT_SIZE:
-                    if(notSelf) fontSizeSpinner.setValue(event.getData());
-                    updateEditorFontSize();
-                    break;
-                case LINE_SPACE:
-                    if(notSelf) lineSpaceSpinner.setValue(event.getData());
-                    updateEditorLineSpace();
-                    break;
-                case FIRST_LINE_INDENT:
-                    if(notSelf) firstLineIndentSpinner.setValue(event.getData());
-                    updateEditorFirstLineIndent();
-                    break;
-                case PARAGRAPH_SPACE:
-                    if(notSelf) paragraphSpaceSpinner.setValue(event.getData());
-                    setTextContent();
-                    break;
-                case MAX_TITLE_LINE_SIZE:
-                    if(notSelf) maxTitleLineSizeSpinner.setValue(event.getData());
-                    break;
-                case READER_LINE_SIZE:
-                    if(notSelf) readerLineSizeSpinner.setValue(event.getData());
-                    break;
-                case SHOW_READER_LINE_TYPE:
-                    if(notSelf) updateShowReaderLineTypeButtonGroup((TextReaderConfig.ShowReaderLineType) event.getData());
-                    break;
-                case READER_LINE_COLOR:
-                    if(notSelf) {
-                        JBColor color = (JBColor) event.getData();
-                        readerLineColorRedChannelSpinner.setValue(color.getRed());
-                        readerLineColorGreenChannelSpinner.setValue(color.getGreen());
-                        readerLineColorBlueChannelSpinner.setValue(color.getBlue());
-                        readerLineColorAlphaChannelSpinner.setValue(color.getAlpha());
-                    }
-                    break;
-                case EDITOR_BACKGROUND_OFFSET_TYPE:
-                    if(notSelf) updateEditorBackgroundOffsetTypeButtonGroup((TextReaderConfig.EditBackgroundOffsetType) event.getData());
-                    break;
-                case EDITOR_BACKGROUND_OFFSET_X:
-                    if(notSelf) offsetXSpinner.setValue(event.getData());
-                    break;
-                case EDITOR_BACKGROUND_OFFSET_Y:
-                    if(notSelf) offsetYSpinner.setValue(event.getData());
-                    break;
-            }
+            ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
         };
         eventManage.addListener(ChapterChangeEvent.EVENT_ID, chapterChangeEventListener);
         eventManage.addListener(ChaptersClearEvent.EVENT_ID, chaptersClearEventListener);
-        eventManage.addListener(ConfigChangeEvent.EVENT_ID, configChangeEventListener);
         Disposable eventDisposable = () -> {
             eventManage.removeListener(ChapterChangeEvent.EVENT_ID, chapterChangeEventListener);
             eventManage.removeListener(ChaptersClearEvent.EVENT_ID, chaptersClearEventListener);
-            eventManage.removeListener(ConfigChangeEvent.EVENT_ID, configChangeEventListener);
         };
         Disposer.register(this, eventDisposable);
+    }
+
+    private void initConfigMessageBusSubscribe(){
+        ApplicationManager.getApplication().getMessageBus()
+                .connect(this)
+                .subscribe(ConfigChangeNotifier.CHANGE_ACTION_TOPIC, ((key, data, source) -> {
+                    boolean notSelf = !Objects.equals(ReaderWindow.this, source);
+                    switch (key){
+                        case FONT_FAMILY:
+                            if(notSelf) updateFontFamilyEl((String) data);
+                            updateEditorFontFamily();
+                            break;
+                        case FONT_SIZE:
+                            if(notSelf) fontSizeSpinner.setValue(data);
+                            updateEditorFontSize();
+                            break;
+                        case LINE_SPACE:
+                            if(notSelf) lineSpaceSpinner.setValue(data);
+                            updateEditorLineSpace();
+                            break;
+                        case FIRST_LINE_INDENT:
+                            if(notSelf) firstLineIndentSpinner.setValue(data);
+                            updateEditorFirstLineIndent();
+                            break;
+                        case PARAGRAPH_SPACE:
+                            if(notSelf) paragraphSpaceSpinner.setValue(data);
+                            setTextContent();
+                            break;
+                        case MAX_TITLE_LINE_SIZE:
+                            if(notSelf) maxTitleLineSizeSpinner.setValue(data);
+                            break;
+                        case READER_LINE_SIZE:
+                            if(notSelf) readerLineSizeSpinner.setValue(data);
+                            break;
+                        case SHOW_READER_LINE_TYPE:
+                            if(notSelf) updateShowReaderLineTypeButtonGroup((ShowReaderLineType) data);
+                            break;
+                        case READER_LINE_COLOR:
+                            if(notSelf) {
+                                JBColor color = (JBColor) data;
+                                readerLineColorRedChannelSpinner.setValue(color.getRed());
+                                readerLineColorGreenChannelSpinner.setValue(color.getGreen());
+                                readerLineColorBlueChannelSpinner.setValue(color.getBlue());
+                                readerLineColorAlphaChannelSpinner.setValue(color.getAlpha());
+                            }
+                            break;
+                        case EDITOR_BACKGROUND_OFFSET_TYPE:
+                            if(notSelf) updateEditorBackgroundOffsetTypeButtonGroup((EditorBackgroundOffsetType) data);
+                            break;
+                        case EDITOR_BACKGROUND_OFFSET_X:
+                            if(notSelf) offsetXSpinner.setValue(data);
+                            break;
+                        case EDITOR_BACKGROUND_OFFSET_Y:
+                            if(notSelf) offsetYSpinner.setValue(data);
+                            break;
+                    }
+                }));
     }
 
     private void init(){
@@ -482,7 +500,7 @@ public class ReaderWindow implements Disposable {
                 break;
             }
         }
-        if(newSelectedIndex > -1) {
+        if(newSelectedIndex > -1 && fontFamilyEl.getSelectedIndex() != newSelectedIndex) {
             fontFamilyEl.setSelectedIndex(newSelectedIndex);
         }
     }
@@ -521,7 +539,7 @@ public class ReaderWindow implements Disposable {
 
     private void setTextContent(){
         try{
-            String text = textReaderCore.readChapterContent();
+            String text = textReaderCore.readChapterContent(config.getParagraphSpace());
             textContent.setText(text);
             textContent.setCaretPosition(0);
         }
@@ -531,7 +549,7 @@ public class ReaderWindow implements Disposable {
         }
     }
 
-    private void updateShowReaderLineTypeButtonGroup(TextReaderConfig.ShowReaderLineType showReaderLineType){
+    private void updateShowReaderLineTypeButtonGroup(ShowReaderLineType showReaderLineType){
         switch (showReaderLineType){
             case NOTIFY:
                 showReaderLineAtRadioButtonGroup.setSelected(atHiddenNotifyRadioButton.getModel(), true);
@@ -544,8 +562,8 @@ public class ReaderWindow implements Disposable {
                 break;
         }
     }
-    private void updateEditorBackgroundOffsetTypeButtonGroup(TextReaderConfig.EditBackgroundOffsetType editBackgroundOffsetType){
-        switch (editBackgroundOffsetType){
+    private void updateEditorBackgroundOffsetTypeButtonGroup(EditorBackgroundOffsetType editorBackgroundOffsetType){
+        switch (editorBackgroundOffsetType){
             case LEFT_TOP:
                 editorBackgroundOffsetTypeButtonGroup.setSelected(atLeftTopRadioButton.getModel(), true);
                 break;
