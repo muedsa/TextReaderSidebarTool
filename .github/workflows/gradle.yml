@@ -34,18 +34,6 @@ jobs:
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: buildPlugin --scan
-    - name: "Add build scan URL as PR comment"
-      uses: actions/github-script@v5
-      if: github.event_name == 'pull_request' && failure()
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: '❌ ${{ github.workflow }} failed: ${{ steps.gradle.outputs.build-scan-url }}'
-          })
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.0
       with:
