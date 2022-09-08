@@ -1,4 +1,4 @@
-package com.muedsa.intellij.textReader.composes;
+package com.muedsa.intellij.textReader.ui;
 
 import com.intellij.util.ui.JBUI;
 import com.muedsa.intellij.textReader.config.EditorBackgroundOffsetType;

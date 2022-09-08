@@ -1,4 +1,4 @@
-package com.muedsa.intellij.textReader.composes;
+package com.muedsa.intellij.textReader.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;

@@ -2,8 +2,8 @@ package com.muedsa.intellij.textReader.util;
 
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.editor.Editor;
-import com.muedsa.intellij.textReader.composes.TextImageBorder;
 import com.muedsa.intellij.textReader.config.TextReaderConfig;
+import com.muedsa.intellij.textReader.ui.TextImageBorder;
 
 import java.awt.*;
 

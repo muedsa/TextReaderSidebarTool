@@ -1,4 +1,4 @@
-package com.muedsa.intellij.textReader.composes;
+package com.muedsa.intellij.textReader.ui;
 
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;

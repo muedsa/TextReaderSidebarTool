@@ -6,7 +6,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.StatusBarWidgetFactory;
-import com.muedsa.intellij.textReader.composes.ReaderLineWidget;
+import com.muedsa.intellij.textReader.ui.ReaderLineWidget;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 

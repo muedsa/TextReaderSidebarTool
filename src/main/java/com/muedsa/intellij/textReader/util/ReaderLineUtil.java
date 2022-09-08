@@ -5,13 +5,13 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.muedsa.intellij.textReader.composes.ReaderLineWidget;
-import com.muedsa.intellij.textReader.composes.ReaderLineWidgetHolder;
 import com.muedsa.intellij.textReader.config.ShowReaderLineType;
 import com.muedsa.intellij.textReader.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.notify.Notification;
 import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
+import com.muedsa.intellij.textReader.ui.ReaderLineWidget;
+import com.muedsa.intellij.textReader.ui.ReaderLineWidgetHolder;
 
 import java.util.HashSet;
 import java.util.Objects;
