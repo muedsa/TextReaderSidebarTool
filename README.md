@@ -5,7 +5,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/muedsa/textreadersidertool/badge)](https://www.codefactor.io/repository/github/muedsa/textreadersidertool)
 [![GitHub Releases](https://img.shields.io/github/downloads/MUedsa/TextReaderSiderTool/total?logo=github)](https://github.com/MUedsa/TextReaderSiderTool/releases)
 
-![](https://github.com/MUedsa/TextReaderSiderTool/blob/master/record.webp?raw=true)
+![](/record.webp)
 
 ## Download And Install
 
