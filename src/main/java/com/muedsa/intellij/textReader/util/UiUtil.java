@@ -3,7 +3,9 @@ package com.muedsa.intellij.textReader.util;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.editor.Editor;
 import com.muedsa.intellij.textReader.config.TextReaderConfig;
-import com.muedsa.intellij.textReader.ui.TextImageBorder;
+import com.muedsa.intellij.textReader.ui.MultiLineTextImageBorder;
+import com.muedsa.intellij.textReader.ui.TextLayoutProperty;
+import com.muedsa.intellij.textReader.ui.TextOffset;
 
 import java.awt.*;
 
@@ -22,9 +24,11 @@ public class UiUtil {
             editor.getContentComponent().setBorder(null);
         }else{
             Font font = new Font(config.getFontFamily(), Font.PLAIN, config.getFontSize());
-            TextImageBorder border = new TextImageBorder(text, font, config.getReaderLineColor(),
-                    config.getEditorBackgroundOffsetType(), config.getEditBackgroundOffsetX(),
+            TextLayoutProperty textLayoutProperty = new TextLayoutProperty(font, config.getReaderLineColor(),
+                    (float) config.getLineSpace(), (float) config.getParagraphSpace(), 0);
+            TextOffset textOffset = new TextOffset(config.getEditorBackgroundOffsetType(), config.getEditBackgroundOffsetX(),
                     config.getEditBackgroundOffsetY(), editor.getScrollingModel().getVisibleAreaOnScrollingFinished());
+            MultiLineTextImageBorder border = new MultiLineTextImageBorder(text, textLayoutProperty, textOffset);
             editor.getContentComponent().setBorder(border);
         }
     }
