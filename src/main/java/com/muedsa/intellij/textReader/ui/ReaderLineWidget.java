@@ -72,7 +72,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
     private void initConfigMessageBusSubscribe(){
         ApplicationManager.getApplication().getMessageBus()
                 .connect(this)
-                .subscribe(ConfigChangeNotifier.CHANGE_ACTION_TOPIC, ((key, data, source) -> {
+                .subscribe(ConfigChangeNotifier.TOPIC, ((key, data, source) -> {
                     if(ConfigKey.SHOW_READER_LINE_TYPE.equals(key)) {
                         ShowReaderLineType showReaderLineType = (ShowReaderLineType) data;
                         setLine(DEFAULT_LINE);

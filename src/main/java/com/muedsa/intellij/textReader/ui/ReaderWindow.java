@@ -5,21 +5,19 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
+import com.intellij.util.messages.MessageBusConnection;
 import com.muedsa.intellij.textReader.bus.ConfigChangeNotifier;
 import com.muedsa.intellij.textReader.config.ConfigKey;
 import com.muedsa.intellij.textReader.config.EditorBackgroundOffsetType;
 import com.muedsa.intellij.textReader.config.ShowReaderLineType;
 import com.muedsa.intellij.textReader.core.Chapter;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
-import com.muedsa.intellij.textReader.core.event.ChapterChangeEvent;
-import com.muedsa.intellij.textReader.core.event.ChaptersClearEvent;
-import com.muedsa.intellij.textReader.core.event.TextReaderEventListener;
-import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
+import com.muedsa.intellij.textReader.core.bus.ChapterChangeNotifier;
+import com.muedsa.intellij.textReader.core.bus.ChapterClearNotifier;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.notify.Notification;
 import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
@@ -369,17 +367,17 @@ public class ReaderWindow implements Disposable {
     }
 
     private void eventRegister(){
-        TextReaderEventManage eventManage = textReaderCore.getEventManage();
-        TextReaderEventListener chapterChangeEventListener = event -> {
-            Chapter chapter = (Chapter) event.getData();
+        MessageBusConnection connect = ApplicationManager.getApplication().getMessageBus()
+                .connect(this);
+        connect.subscribe(ChapterChangeNotifier.TOPIC, chapter -> {
             titleList.setListData(textReaderCore.getChapters());
             if(chapter != null){
                 titleList.setSelectedValue(chapter, true);
             }
             searchTextField.setEnabled(!textReaderCore.getChapters().isEmpty());
             setTextContent();
-        };
-        TextReaderEventListener chaptersClearEventListener = event -> {
+        });
+        connect.subscribe(ChapterClearNotifier.TOPIC, () -> {
             titleList.setListData(textReaderCore.getChapters());
             titleList.clearSelection();
             textContent.setText("");
@@ -387,20 +385,13 @@ public class ReaderWindow implements Disposable {
             searchTextField.setText("");
             searchTextField.setEnabled(false);
             ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
-        };
-        eventManage.addListener(ChapterChangeEvent.EVENT_ID, chapterChangeEventListener);
-        eventManage.addListener(ChaptersClearEvent.EVENT_ID, chaptersClearEventListener);
-        Disposable eventDisposable = () -> {
-            eventManage.removeListener(ChapterChangeEvent.EVENT_ID, chapterChangeEventListener);
-            eventManage.removeListener(ChaptersClearEvent.EVENT_ID, chaptersClearEventListener);
-        };
-        Disposer.register(this, eventDisposable);
+        });
     }
 
     private void initConfigMessageBusSubscribe(){
         ApplicationManager.getApplication().getMessageBus()
                 .connect(this)
-                .subscribe(ConfigChangeNotifier.CHANGE_ACTION_TOPIC, ((key, data, source) -> {
+                .subscribe(ConfigChangeNotifier.TOPIC, ((key, data, source) -> {
                     boolean notSelf = !Objects.equals(ReaderWindow.this, source);
                     switch (key){
                         case FONT_FAMILY:

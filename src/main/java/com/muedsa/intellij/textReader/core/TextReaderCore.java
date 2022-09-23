@@ -1,9 +1,10 @@
 package com.muedsa.intellij.textReader.core;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.muedsa.intellij.textReader.core.event.ChapterChangeEvent;
-import com.muedsa.intellij.textReader.core.event.ChaptersClearEvent;
-import com.muedsa.intellij.textReader.core.event.TextReaderEventManage;
+import com.intellij.util.messages.MessageBus;
+import com.muedsa.intellij.textReader.core.bus.ChapterChangeNotifier;
+import com.muedsa.intellij.textReader.core.bus.ChapterClearNotifier;
 import com.muedsa.intellij.textReader.core.util.ChapterUtil;
 import com.muedsa.intellij.textReader.state.TextReaderChapterStateService;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +16,8 @@ import java.util.regex.Pattern;
 public class TextReaderCore {
 
     private final static TextReaderCore INSTANCE = new TextReaderCore();
-    private final TextReaderEventManage eventManage = new TextReaderEventManage();
+    private final ChapterChangeNotifier chapterChangeNotifier;
+    private final ChapterClearNotifier chapterClearNotifier;
     private TextReaderChapterStateService textReaderChapterStateService;
 
     private TextFile textFile;
@@ -26,6 +28,9 @@ public class TextReaderCore {
     private int positionInChapter = 0;
 
     private TextReaderCore() {
+        MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
+        chapterChangeNotifier = messageBus.syncPublisher(ChapterChangeNotifier.TOPIC);
+        chapterClearNotifier = messageBus.syncPublisher(ChapterClearNotifier.TOPIC);
         initStateService();
     }
 
@@ -53,7 +58,7 @@ public class TextReaderCore {
         noBlankChapterText = "";
         positionInChapter = 0;
         saveState();
-        eventManage.notifyEvent(new ChapterChangeEvent(chapterList.get(chapterIndex)));
+        chapterChangeNotifier.notifyChange(chapterList.get(chapterIndex));
     }
 
     private void initWithFileAndChapters(String filePath, Vector<Chapter> chapterList) throws IOException {
@@ -62,7 +67,7 @@ public class TextReaderCore {
         chapterIndex = 0;
         noBlankChapterText = "";
         positionInChapter = 0;
-        eventManage.notifyEvent(new ChapterChangeEvent(chapterList.get(chapterIndex)));
+        chapterChangeNotifier.notifyChange(chapterList.get(chapterIndex));
     }
 
     public Vector<Chapter> getChapters(){
@@ -85,14 +90,14 @@ public class TextReaderCore {
         textFile = null;
         chapterList = new Vector<>(0);
         saveState();
-        eventManage.notifyEvent(new ChaptersClearEvent(null));
+        chapterClearNotifier.notifyClear();
     }
 
     public int changeChapter(Chapter chapter) {
         int index = chapterList.indexOf(chapter);
         if(index >= 0){
             chapterIndex = index;
-            eventManage.notifyEvent(new ChapterChangeEvent(chapter));
+            chapterChangeNotifier.notifyChange(chapter);
         }
         return index;
     }
@@ -148,7 +153,7 @@ public class TextReaderCore {
         int index = chapterIndex + 1;
         if(index + 1 <= count){
             chapterIndex = index;
-            eventManage.notifyEvent(new ChapterChangeEvent(chapterList.get(index)));
+            chapterChangeNotifier.notifyChange(chapterList.get(index));
         }else{
             index = -1;
         }
@@ -159,7 +164,7 @@ public class TextReaderCore {
         int index = chapterIndex - 1;
         if(index >= 0 && index < chapterList.size()){
             chapterIndex = index;
-            eventManage.notifyEvent(new ChapterChangeEvent(chapterList.get(index)));
+            chapterChangeNotifier.notifyChange(chapterList.get(index));
         }else{
             index = -1;
         }
@@ -168,10 +173,6 @@ public class TextReaderCore {
 
     public static TextReaderCore getInstance(){
         return INSTANCE;
-    }
-
-    public TextReaderEventManage getEventManage(){
-        return eventManage;
     }
 
     private void saveState(){

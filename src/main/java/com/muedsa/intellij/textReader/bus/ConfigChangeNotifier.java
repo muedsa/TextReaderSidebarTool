@@ -5,7 +5,7 @@ import com.muedsa.intellij.textReader.config.ConfigKey;
 
 public interface ConfigChangeNotifier {
 
-    Topic<ConfigChangeNotifier> CHANGE_ACTION_TOPIC = Topic.create("TextReaderConfigChangeNotifier", ConfigChangeNotifier.class);
+    Topic<ConfigChangeNotifier> TOPIC = Topic.create("TextReaderConfigChangeNotifier", ConfigChangeNotifier.class);
 
     void configChanged(ConfigKey key, Object data, Object source);
 }

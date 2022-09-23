@@ -54,7 +54,7 @@ public abstract class TextReaderConfig {
     private ConfigChangeNotifier notifier;
 
     protected TextReaderConfig() {
-        notifier = ApplicationManager.getApplication().getMessageBus().syncPublisher(ConfigChangeNotifier.CHANGE_ACTION_TOPIC);
+        notifier = ApplicationManager.getApplication().getMessageBus().syncPublisher(ConfigChangeNotifier.TOPIC);
     }
 
     public void changeConfig(ConfigKey key, Object value, Object source) {
