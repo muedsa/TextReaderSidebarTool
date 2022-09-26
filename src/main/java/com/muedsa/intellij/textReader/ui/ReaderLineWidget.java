@@ -34,7 +34,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
     private Project project;
     private TextReaderConfigStateService config;
 
-    public final class ReaderLineComponent extends TextPanel implements StatusBarWidgetWrapper{
+    public final static class ReaderLineComponent extends TextPanel implements StatusBarWidgetWrapper{
 
         private TextPresentation presentation;
 

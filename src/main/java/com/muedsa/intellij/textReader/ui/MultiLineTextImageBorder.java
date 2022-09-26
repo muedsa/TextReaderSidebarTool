@@ -43,8 +43,8 @@ public class MultiLineTextImageBorder implements Border {
             lineHeight = textLayoutProperty.getFont().getLineMetrics(" ", g2d.getFontRenderContext()).getHeight();
         }
         float breakWidth = textLayoutProperty.getBreakWidth() <= 0? width - x : textLayoutProperty.getBreakWidth();
-        for (int i = 0; i < paragraphs.length; i++) {
-            drawY = paragraphs[i].paint(g2d, drawX, drawY, breakWidth, textLayoutProperty.getInterlineSpacingScale());
+        for (Paragraph paragraph : paragraphs) {
+            drawY = paragraph.paint(g2d, drawX, drawY, breakWidth, textLayoutProperty.getInterlineSpacingScale());
             drawY += lineHeight * textLayoutProperty.getInterParagraphSpacingScale();
         }
     }

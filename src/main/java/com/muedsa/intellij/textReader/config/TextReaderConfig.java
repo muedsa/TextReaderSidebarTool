@@ -39,7 +39,7 @@ public abstract class TextReaderConfig {
 
     //状态栏部件文本颜色
     @OptionTag(converter = JBColorConverter.class)
-    private JBColor readerLineColor = new JBColor(UIUtil.getPanelBackground().brighter(), UIUtil.getPanelBackground().brighter());;
+    private JBColor readerLineColor = new JBColor(UIUtil.getPanelBackground().brighter(), UIUtil.getPanelBackground().brighter());
 
     //编辑器背景偏移类型
     private EditorBackgroundOffsetType editorBackgroundOffsetType = EditorBackgroundOffsetType.LEFT_TOP;

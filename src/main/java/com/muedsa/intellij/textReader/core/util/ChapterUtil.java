@@ -48,7 +48,7 @@ public class ChapterUtil {
     }
 
     public static String getChapterContent(TextFile textFile, Chapter chapter) throws IOException {
-        String content = "";
+        String content;
         try (RandomAccessFile file = new RandomAccessFile(textFile.getFilePath(), "r")) {
             file.skipBytes(chapter.getStartOffset());
             byte[] bytes = new byte[chapter.getLength()];

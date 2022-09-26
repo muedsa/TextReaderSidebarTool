@@ -278,9 +278,7 @@ public class ReaderWindow implements Disposable {
         });
 
         //清除
-        clearButton.addActionListener(e -> {
-            textReaderCore.clear();
-        });
+        clearButton.addActionListener(e -> textReaderCore.clear());
 
         //搜素输入
         searchTextField.getDocument().addDocumentListener(new DocumentAdapter() {
