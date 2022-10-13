@@ -21,7 +21,7 @@ import com.muedsa.intellij.textReader.core.bus.ChapterClearNotifier;
 import com.muedsa.intellij.textReader.file.TextFileChooserDescriptor;
 import com.muedsa.intellij.textReader.notify.Notification;
 import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
-import com.muedsa.intellij.textReader.util.ReaderLineUtil;
+import com.muedsa.intellij.textReader.util.ReaderPageLineUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -382,7 +382,7 @@ public class ReaderWindow implements Disposable {
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
+            ReaderPageLineUtil.clear(config.getShowReaderLineType(), config, project);
         });
     }
 

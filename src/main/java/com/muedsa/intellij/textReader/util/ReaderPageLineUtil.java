@@ -10,6 +10,7 @@ import com.muedsa.intellij.textReader.config.TextReaderConfig;
 import com.muedsa.intellij.textReader.core.TextReaderCore;
 import com.muedsa.intellij.textReader.notify.Notification;
 import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
+import com.muedsa.intellij.textReader.ui.BoundedMultiLineTextBox;
 import com.muedsa.intellij.textReader.ui.ReaderLineWidget;
 import com.muedsa.intellij.textReader.ui.ReaderLineWidgetHolder;
 
@@ -17,19 +18,21 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class ReaderLineUtil {
+public class ReaderPageLineUtil {
 
     private static final Set<Project> historyFlag = new HashSet<>();
     private static Project LAST_PROJECT = null;
     private static ShowReaderLineType SHOW_READER_LINE_TYPE_FROM_LAST = null;
 
     public static void nextLine(TextReaderConfig config, Project project) {
-        String line;
+        String line = null;
         NotificationType type;
         TextReaderCore textReaderCore = TextReaderCore.getInstance();
         if(textReaderCore.isReady()){
             type = NotificationType.INFORMATION;
-            line = textReaderCore.nextLine(config.getReaderLineSize());
+            //line = textReaderCore.nextLine(config.getReaderLineSize());
+            //todo 判断是否翻页
+            BoundedMultiLineTextBox.getInstance().next();
         }else{
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
@@ -38,12 +41,14 @@ public class ReaderLineUtil {
     }
 
     public static void previousLine(TextReaderConfigStateService config, Project project) {
-        String line;
+        String line = null;
         NotificationType type;
         TextReaderCore textReaderCore = TextReaderCore.getInstance();
         if(textReaderCore.isReady()){
             type = NotificationType.INFORMATION;
-            line = textReaderCore.previousLine(config.getReaderLineSize());
+            //line = textReaderCore.previousLine(config.getReaderLineSize());
+            //todo 判断是否翻页
+            BoundedMultiLineTextBox.getInstance().previous();
         }else{
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
@@ -65,7 +70,8 @@ public class ReaderLineUtil {
             case EDITOR_BACKGROUND:
                 Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                 if(editor != null){
-                    UiUtil.setEditorTextBackground(editor, line, config);
+                    //UiUtil.setEditorTextBackground(editor, line, config);
+                    UiUtil.initPaintMultiLineTextEditorBorder(editor, BoundedMultiLineTextBox.getInstance());
                 }
                 break;
         }

@@ -16,7 +16,7 @@ import com.muedsa.intellij.textReader.bus.ConfigChangeNotifier;
 import com.muedsa.intellij.textReader.config.ConfigKey;
 import com.muedsa.intellij.textReader.config.ShowReaderLineType;
 import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
-import com.muedsa.intellij.textReader.util.ReaderLineUtil;
+import com.muedsa.intellij.textReader.util.ReaderPageLineUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +77,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
                         ShowReaderLineType showReaderLineType = (ShowReaderLineType) data;
                         setLine(DEFAULT_LINE);
                         if(ShowReaderLineType.STATUS_BAR.equals(showReaderLineType)){
-                            ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
+                            ReaderPageLineUtil.clear(config.getShowReaderLineType(), config, project);
                             StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
                             if(widgetFactory != null) {
                                 ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);

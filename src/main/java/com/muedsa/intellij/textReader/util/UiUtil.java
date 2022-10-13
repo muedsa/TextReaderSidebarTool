@@ -3,9 +3,7 @@ package com.muedsa.intellij.textReader.util;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.editor.Editor;
 import com.muedsa.intellij.textReader.config.TextReaderConfig;
-import com.muedsa.intellij.textReader.ui.MultiLineTextImageBorder;
-import com.muedsa.intellij.textReader.ui.TextLayoutProperty;
-import com.muedsa.intellij.textReader.ui.TextOffset;
+import com.muedsa.intellij.textReader.ui.*;
 
 import java.awt.*;
 
@@ -26,10 +24,14 @@ public class UiUtil {
             Font font = new Font(config.getFontFamily(), Font.PLAIN, config.getFontSize());
             TextLayoutProperty textLayoutProperty = new TextLayoutProperty(font, config.getReaderLineColor(),
                     (float) config.getLineSpace(), (float) config.getParagraphSpace(), 0);
-            TextOffset textOffset = new TextOffset(config.getEditorBackgroundOffsetType(), config.getEditBackgroundOffsetX(),
+            BasicTextOffset basicTextOffset = new BasicTextOffset(config.getEditorBackgroundOffsetType(), config.getEditBackgroundOffsetX(),
                     config.getEditBackgroundOffsetY(), editor.getScrollingModel().getVisibleAreaOnScrollingFinished());
-            MultiLineTextImageBorder border = new MultiLineTextImageBorder(text, textLayoutProperty, textOffset);
+            MultiLineTextImageBorder border = new MultiLineTextImageBorder(text, textLayoutProperty, basicTextOffset);
             editor.getContentComponent().setBorder(border);
         }
+    }
+
+    public static void initPaintMultiLineTextEditorBorder(Editor editor, BoundedMultiLineTextBox box) {
+        editor.getContentComponent().setBorder(new PaintMultiLineTextEditorBorder(editor, box));
     }
 }
