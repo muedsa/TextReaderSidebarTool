@@ -5,6 +5,8 @@ import java.util.List;
 
 public class GraphicsDrawDebugger {
 
+    public static boolean DEBUG = Boolean.getBoolean("debug");
+
     private final List<Long> frameTimeList = new ArrayList<>();
     private long lastFrameStartTime = 0;
     private long lastFrameEndTime = 0;

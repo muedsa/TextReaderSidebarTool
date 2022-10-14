@@ -30,9 +30,11 @@ public class ReaderPageLineUtil {
         TextReaderCore textReaderCore = TextReaderCore.getInstance();
         if(textReaderCore.isReady()){
             type = NotificationType.INFORMATION;
-            //line = textReaderCore.nextLine(config.getReaderLineSize());
-            //todo 判断是否翻页
-            BoundedMultiLineTextBox.getInstance().next();
+            if(ShowReaderLineType.EDITOR_BACKGROUND.equals(config.getShowReaderLineType())) {
+                BoundedMultiLineTextBox.getInstance().next();
+            }else{
+                line = textReaderCore.nextLine(config.getReaderLineSize());
+            }
         }else{
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
@@ -46,9 +48,12 @@ public class ReaderPageLineUtil {
         TextReaderCore textReaderCore = TextReaderCore.getInstance();
         if(textReaderCore.isReady()){
             type = NotificationType.INFORMATION;
-            //line = textReaderCore.previousLine(config.getReaderLineSize());
-            //todo 判断是否翻页
-            BoundedMultiLineTextBox.getInstance().previous();
+
+            if(ShowReaderLineType.EDITOR_BACKGROUND.equals(config.getShowReaderLineType())) {
+                BoundedMultiLineTextBox.getInstance().previous();
+            }else{
+                line = textReaderCore.nextLine(config.getReaderLineSize());
+            }
         }else{
             type = NotificationType.WARNING;
             line = Notification.MSG_NOT_LOAD_FILE;
@@ -70,7 +75,6 @@ public class ReaderPageLineUtil {
             case EDITOR_BACKGROUND:
                 Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                 if(editor != null){
-                    //UiUtil.setEditorTextBackground(editor, line, config);
                     UiUtil.initPaintMultiLineTextEditorBorder(editor, BoundedMultiLineTextBox.getInstance());
                 }
                 break;
@@ -96,7 +100,7 @@ public class ReaderPageLineUtil {
             case EDITOR_BACKGROUND:
                 Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                 if(editor != null){
-                    UiUtil.setEditorTextBackground(editor, null, config);
+                    UiUtil.removeBorder(editor);
                 }
                 break;
         }

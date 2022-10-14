@@ -2,10 +2,8 @@ package com.muedsa.intellij.textReader.util;
 
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.editor.Editor;
-import com.muedsa.intellij.textReader.config.TextReaderConfig;
-import com.muedsa.intellij.textReader.ui.*;
-
-import java.awt.*;
+import com.muedsa.intellij.textReader.ui.BoundedMultiLineTextBox;
+import com.muedsa.intellij.textReader.ui.PaintMultiLineTextEditorBorder;
 
 public class UiUtil {
 
@@ -17,21 +15,11 @@ public class UiUtil {
                         && plugin.isEnabled());
     }
 
-    public static void setEditorTextBackground(Editor editor, String text, TextReaderConfig config){
-        if(text == null){
-            editor.getContentComponent().setBorder(null);
-        }else{
-            Font font = new Font(config.getFontFamily(), Font.PLAIN, config.getFontSize());
-            TextLayoutProperty textLayoutProperty = new TextLayoutProperty(font, config.getReaderLineColor(),
-                    (float) config.getLineSpace(), (float) config.getParagraphSpace(), 0);
-            BasicTextOffset basicTextOffset = new BasicTextOffset(config.getEditorBackgroundOffsetType(), config.getEditBackgroundOffsetX(),
-                    config.getEditBackgroundOffsetY(), editor.getScrollingModel().getVisibleAreaOnScrollingFinished());
-            MultiLineTextImageBorder border = new MultiLineTextImageBorder(text, textLayoutProperty, basicTextOffset);
-            editor.getContentComponent().setBorder(border);
-        }
-    }
-
     public static void initPaintMultiLineTextEditorBorder(Editor editor, BoundedMultiLineTextBox box) {
         editor.getContentComponent().setBorder(new PaintMultiLineTextEditorBorder(editor, box));
+    }
+
+    public static void removeBorder(Editor editor) {
+        editor.getContentComponent().setBorder(null);
     }
 }

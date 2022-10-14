@@ -82,6 +82,13 @@ public class ReaderWindow implements Disposable {
     private ButtonGroup editorBackgroundOffsetTypeButtonGroup;
     private JSpinner offsetXSpinner;
     private JSpinner offsetYSpinner;
+    private JRadioButton singleLineRadioButton;
+    private JRadioButton multiLineRadioButton;
+
+    private ButtonGroup isMultiLineButtonGroup;
+
+    private JSpinner multiLineTextBoxWidthSpinner;
+    private JSpinner multiLineTextBoxHeightSpinner;
     private final TextReaderCore textReaderCore;
 
     private int id;
@@ -181,6 +188,38 @@ public class ReaderWindow implements Disposable {
         atHiddenNotifyRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
         atStatusBarRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
         atEditorBackgroundRadioButton.addActionListener(showReaderLineAtRadioButtonActionListener);
+        atEditorBackgroundRadioButton.addMouseListener(new MouseAdapter() {
+            private int count = 0;
+            private ClearTask clearTask;
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                count++;
+                if(count > 2) {
+                    GraphicsDrawDebugger.DEBUG = !GraphicsDrawDebugger.DEBUG;
+                }
+                if(Objects.nonNull(clearTask)) {
+                    clearTask.cancel();
+                }
+                clearTask = new ClearTask();
+            }
+
+            class ClearTask extends Thread {
+                private boolean cancel = false;
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {}
+                    if(!cancel){
+                        count = 0;
+                    }
+                }
+
+                public void cancel(){
+                    cancel = true;
+                }
+            }
+        });
 
         //文本颜色
         SpinnerModel readerLineColorRedChannelSpinnerModel = new SpinnerNumberModel(config.getReaderLineColor().getRed(), 0, 255, 1);
@@ -243,6 +282,33 @@ public class ReaderWindow implements Disposable {
         offsetYSpinner.setModel(editBackgroundOffsetYSpinnerModel);
         editBackgroundOffsetYSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_Y,
                 offsetYSpinner.getValue(), ReaderWindow.this));
+
+        //是否多行
+        isMultiLineButtonGroup = new ButtonGroup();
+        isMultiLineButtonGroup.add(singleLineRadioButton);
+        isMultiLineButtonGroup.add(multiLineRadioButton);
+        updateIsMultiLineButtonGroup(config.isMultiLineTextBox());
+        ActionListener isMultiLineActionListener = e -> {
+            if(isMultiLineButtonGroup.getSelection().equals(singleLineRadioButton.getModel())){
+                config.changeConfig(ConfigKey.MULTI_LINE_TEXT_BOX, false, ReaderWindow.this);
+            }else{
+                config.changeConfig(ConfigKey.MULTI_LINE_TEXT_BOX, true, ReaderWindow.this);
+            }
+        };
+        singleLineRadioButton.addActionListener(isMultiLineActionListener);
+        multiLineRadioButton.addActionListener(isMultiLineActionListener);
+
+        //多行边界宽度
+        SpinnerModel  multiLineTextBoxWidthSpinnerModel = new SpinnerNumberModel(config.getMultiLineTextBoxWidth(), 0, 10000, 1);
+        multiLineTextBoxWidthSpinner.setModel(multiLineTextBoxWidthSpinnerModel);
+        multiLineTextBoxWidthSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.MULTI_LINE_TEXT_BOX_WIDTH,
+                multiLineTextBoxWidthSpinner.getValue(), ReaderWindow.this));
+
+        //多行边界高度
+        SpinnerModel  multiLineTextBoxHeightSpinnerModel = new SpinnerNumberModel(config.getMultiLineTextBoxWidth(), 0, 10000, 1);
+        multiLineTextBoxHeightSpinner.setModel(multiLineTextBoxHeightSpinnerModel);
+        multiLineTextBoxWidthSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.MULTI_LINE_TEXT_BOX_HEIGHT,
+                multiLineTextBoxHeightSpinner.getValue(), ReaderWindow.this));
 
         //添加文件
         fileButton.addActionListener(e -> {
@@ -439,6 +505,15 @@ public class ReaderWindow implements Disposable {
                         case EDITOR_BACKGROUND_OFFSET_Y:
                             if(notSelf) offsetYSpinner.setValue(data);
                             break;
+                        case MULTI_LINE_TEXT_BOX:
+                            if(notSelf) updateIsMultiLineButtonGroup((boolean) data);
+                            break;
+                        case MULTI_LINE_TEXT_BOX_WIDTH:
+                            if(notSelf) multiLineTextBoxWidthSpinner.setValue(data);
+                            break;
+                        case MULTI_LINE_TEXT_BOX_HEIGHT:
+                            if(notSelf) multiLineTextBoxHeightSpinner.setValue(data);
+                            break;
                     }
                 }));
     }
@@ -565,6 +640,14 @@ public class ReaderWindow implements Disposable {
             case RIGHT_BOTTOM:
                 editorBackgroundOffsetTypeButtonGroup.setSelected(atRightBottomRadioButton.getModel(), true);
                 break;
+        }
+    }
+
+    private void updateIsMultiLineButtonGroup(boolean isMultiLine) {
+        if(isMultiLine) {
+            isMultiLineButtonGroup.setSelected(multiLineRadioButton.getModel(), true);
+        }else{
+            isMultiLineButtonGroup.setSelected(singleLineRadioButton.getModel(), true);
         }
     }
 

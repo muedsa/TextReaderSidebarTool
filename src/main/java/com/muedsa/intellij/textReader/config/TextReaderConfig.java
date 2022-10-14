@@ -50,6 +50,15 @@ public abstract class TextReaderConfig {
     //编辑器背景竖直偏移量
     private int editBackgroundOffsetY = 400;
 
+    //编辑器背景边界宽度
+    private int multiLineTextBoxWidth = 500;
+
+    //编辑器背景边界高度
+    private int multiLineTextBoxHeight = 800;
+
+    //是否多行
+    private boolean multiLineTextBox = false;
+
     @Transient
     private ConfigChangeNotifier notifier;
 
@@ -94,6 +103,15 @@ public abstract class TextReaderConfig {
                 break;
             case EDITOR_BACKGROUND_OFFSET_Y:
                 editBackgroundOffsetY = (int) value;
+                break;
+            case MULTI_LINE_TEXT_BOX_WIDTH:
+                multiLineTextBoxWidth = (int) value;
+                break;
+            case MULTI_LINE_TEXT_BOX_HEIGHT:
+                multiLineTextBoxHeight = (int) value;
+                break;
+            case MULTI_LINE_TEXT_BOX:
+                multiLineTextBox = (boolean) value;
                 break;
         }
         notifier.configChanged(key, value, source);
@@ -193,5 +211,29 @@ public abstract class TextReaderConfig {
 
     public void setEditBackgroundOffsetY(int editBackgroundOffsetY) {
         this.editBackgroundOffsetY = editBackgroundOffsetY;
+    }
+
+    public int getMultiLineTextBoxWidth() {
+        return multiLineTextBoxWidth;
+    }
+
+    public void setMultiLineTextBoxWidth(int multiLineTextBoxWidth) {
+        this.multiLineTextBoxWidth = multiLineTextBoxWidth;
+    }
+
+    public int getMultiLineTextBoxHeight() {
+        return multiLineTextBoxHeight;
+    }
+
+    public void setMultiLineTextBoxHeight(int multiLineTextBoxHeight) {
+        this.multiLineTextBoxHeight = multiLineTextBoxHeight;
+    }
+
+    public boolean isMultiLineTextBox() {
+        return multiLineTextBox;
+    }
+
+    public void setMultiLineTextBox(boolean multiLineTextBox) {
+        this.multiLineTextBox = multiLineTextBox;
     }
 }

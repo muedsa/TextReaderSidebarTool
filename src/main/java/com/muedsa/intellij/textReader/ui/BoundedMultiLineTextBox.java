@@ -10,18 +10,24 @@ import com.muedsa.intellij.textReader.state.TextReaderConfigStateService;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Objects;
 
 public class BoundedMultiLineTextBox {
     private static final BoundedMultiLineTextBox INSTANCE = new BoundedMultiLineTextBox(Disposer.newDisposable());
 
     private TextReaderCore textReaderCore;
 
+    private boolean isMultiLine;
     private int boundedWidth; // 边界宽度
     private int boundedHeight; // 边界高度
     private Font font; //字体
     private Color color; //字体颜色
     private float interlineSpacingScale;   //行间距
     private float interParagraphSpacingScale; //段落间距
+
+    private int readLineSize;
+
+    private String text;
 
     private String[] paragraphs; // 章节段落
 
@@ -44,8 +50,10 @@ public class BoundedMultiLineTextBox {
         color = config.getReaderLineColor();
         interlineSpacingScale = (float) config.getLineSpace();
         interParagraphSpacingScale = (float) config.getParagraphSpace();
-        boundedWidth = 300;
-        boundedHeight = 500;
+        boundedWidth = config.getMultiLineTextBoxWidth();
+        boundedHeight = config.getMultiLineTextBoxHeight();
+        isMultiLine = config.isMultiLineTextBox();
+        readLineSize = config.getReaderLineSize();
         registerConfigChange(disposable);
         registerChapterChange(disposable);
         updateText();
@@ -68,6 +76,20 @@ public class BoundedMultiLineTextBox {
                         case PARAGRAPH_SPACE:
                             interParagraphSpacingScale = (float) data;
                             break;
+                        case MULTI_LINE_TEXT_BOX:
+                            isMultiLine = (boolean) data;
+                            text = textReaderCore.nextLine(readLineSize);
+                            updateText();
+                            break;
+                        case MULTI_LINE_TEXT_BOX_WIDTH:
+                            boundedWidth = (int) data;
+                            break;
+                        case MULTI_LINE_TEXT_BOX_HEIGHT:
+                            boundedHeight = (int) data;
+                            break;
+                        case READER_LINE_SIZE:
+                            readLineSize = (int) data;
+                            break;
                     }
                 });
     }
@@ -78,11 +100,14 @@ public class BoundedMultiLineTextBox {
     }
 
     private void updateText() {
-        String text;
-        try {
-            text = textReaderCore.readChapterContent(0);
-        } catch (IOException e){
-            text = e.getMessage();
+        if(isMultiLine){
+            try {
+                text = textReaderCore.readChapterContent(0);
+            } catch (IOException e){
+                text = e.getMessage();
+            }
+        }else{
+            if(Objects.isNull(text)) text = "";
         }
         paragraphs = text.split("\n");
         paragraphPos = 0;
@@ -117,6 +142,14 @@ public class BoundedMultiLineTextBox {
         return paragraphs;
     }
 
+    public void next(){
+        if(isMultiLine){
+            nextPage();
+        } else {
+            text = textReaderCore.nextLine(readLineSize);
+            updateText();
+        }
+    }
 
     private void nextPage() {
         if(paragraphPos + paragraphLimit < paragraphs.length) {
@@ -128,12 +161,13 @@ public class BoundedMultiLineTextBox {
         }
     }
 
-    public void next(){
-        nextPage();
-    }
-
     public void previous(){
-        previousPage();
+        if(isMultiLine) {
+            previousPage();
+        } else {
+            text = textReaderCore.previousLine(readLineSize);
+            updateText();
+        }
     }
 
     public void previousPage(){

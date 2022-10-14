@@ -19,7 +19,7 @@ public class PaintMultiLineTextEditorBorder implements Border {
     private TextOffset textOffset;
 
     private BoundedMultiLineTextBox box;
-    private Paragraph2[] paragraphs;
+    private Paragraph[] paragraphs;
 
     private float lineHeight = 0;
 
@@ -116,7 +116,7 @@ public class PaintMultiLineTextEditorBorder implements Border {
         int previousPageParagraphPos = 0;
         int previousPageFirstParagraphTextPos = 0;
         for (int paragraphPos = lastParagraphPos; paragraphPos >= 0; paragraphPos--) {
-            Paragraph2 paragraph = paragraphs[paragraphPos];
+            Paragraph paragraph = paragraphs[paragraphPos];
             for (int linePos = paragraph.getLinesCount() - 1; linePos >= 0; linePos--) {
                 float lineHeight = paragraph.measureLineHeight(linePos);
                 drawY -= lineHeight;
@@ -142,9 +142,9 @@ public class PaintMultiLineTextEditorBorder implements Border {
     private void initParagraph(FontRenderContext fontRenderContext){
         if(!immutable || Objects.isNull(paragraphs)) {
             String[] lines = box.getLines();
-            paragraphs = new Paragraph2[lines.length];
+            paragraphs = new Paragraph[lines.length];
             for (int i = 0; i < lines.length; i++) {
-                paragraphs[i] = new Paragraph2(i + 1,
+                paragraphs[i] = new Paragraph(i + 1,
                         new AttributedString(lines[i], box.getFont().getAttributes()),
                         fontRenderContext,
                         box.getBoundedWidth(),
@@ -154,16 +154,18 @@ public class PaintMultiLineTextEditorBorder implements Border {
     }
 
     private void paintDebugger(Graphics2D g2d) {
-        Color tempColor = g2d.getColor();
-        g2d.setColor(JBColor.RED);
-        FontMetrics fontMetrics = g2d.getFontMetrics();
-        float drawX = textOffset.getX() + box.getBoundedWidth() + 10;
-        float drawY = textOffset.getY() + box.getBoundedHeight() + 10;
-        drawY += fontMetrics.getAscent();
-        g2d.drawString(debugger.formatAvgFps("Avg FPS: %.2f"), drawX, drawY);
-        drawY += fontMetrics.getDescent() + fontMetrics.getLeading() + fontMetrics.getAscent();
-        g2d.drawString(debugger.formatAvgFrameTime("Avg Frame Time: %.2f"), drawX, drawY);
-        g2d.setColor(tempColor);
+        if(GraphicsDrawDebugger.DEBUG) {
+            Color tempColor = g2d.getColor();
+            g2d.setColor(JBColor.RED);
+            FontMetrics fontMetrics = g2d.getFontMetrics();
+            float drawX = textOffset.getX() + box.getBoundedWidth() + 10;
+            float drawY = textOffset.getY() + box.getBoundedHeight() + 10;
+            drawY += fontMetrics.getAscent();
+            g2d.drawString(debugger.formatAvgFps("Avg FPS: %.2f"), drawX, drawY);
+            drawY += fontMetrics.getDescent() + fontMetrics.getLeading() + fontMetrics.getAscent();
+            g2d.drawString(debugger.formatAvgFrameTime("Avg Frame Time: %.2f"), drawX, drawY);
+            g2d.setColor(tempColor);
+        }
     }
 
     @Override
