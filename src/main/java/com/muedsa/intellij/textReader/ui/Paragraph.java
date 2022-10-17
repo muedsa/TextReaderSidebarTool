@@ -19,7 +19,6 @@ public class Paragraph {
     private LineBreakMeasurer lineBreakMeasurer;
     private int paragraphStart;
     private int paragraphEnd;
-
     private float breakWidth;
 
     private float interlineSpacingScale;
@@ -85,11 +84,12 @@ public class Paragraph {
                 if (y >= bottomBound) {
                     break;
                 }
+                int position = breakPosition;
                 float lineY = y + textLayout.getAscent();
                 textLayout.draw(g2d, x, lineY);
                 y = lineY + textLayout.getDescent() + (textLayout.getAscent() + textLayout.getDescent()) * interlineSpacingScale;
                 breakPosition += textLayout.getCharacterCount();
-                paintDebugger(g2d, debuggerX, lineY);
+                paintDebugger(g2d, debuggerX, lineY, position, breakPosition);
             }
         }
         return y;
@@ -116,11 +116,11 @@ public class Paragraph {
         return breakPosition == paragraphEnd;
     }
 
-    private void paintDebugger(Graphics2D g2d, float x, float y) {
+    private void paintDebugger(Graphics2D g2d, float x, float y, int textPosStart, int textPosEnd) {
         if(GraphicsDrawDebugger.DEBUG){
             Color tempColor = g2d.getColor();
             g2d.setColor(JBColor.RED);
-            g2d.drawString("[" + paragraphNum + (isEnd()? " End" : "") + "]", x, y);
+                g2d.drawString("[" + paragraphNum + " " + textPosStart + "-" + textPosEnd + (isEnd()? " End" : "") + "]", x, y);
             g2d.setColor(tempColor);
         }
     }

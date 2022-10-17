@@ -75,29 +75,6 @@ public class PaintMultiLineTextEditorBorder implements Border {
         box.setParagraphLimit(limit);
     }
 
-    private void reversePointText(Graphics2D g2d){
-//        float drawX = textOffset.getX();
-//        float drawY = textOffset.getY() + box.getBoundedHeight();
-//        float limitY = textOffset.getY();
-//        int limit = 0;
-//        paragraphs[box.getParagraphPos()].setPosition(0);
-//        for (int i = box.getParagraphPos(); i >= 0; i--) {
-//            drawY = paragraphs[i].paintReverse(g2d, drawX, drawY, limitY);
-//            limit++;
-//            if(paragraphs[i].isEndReverse()){
-//                //box.setNextPageFirstParagraphTextPos(0);
-//                drawY -= lineHeight * box.getInterParagraphSpacingScale();
-//                if(drawY <= limitY) {
-//                    break;
-//                }
-//            }else{
-//                //box.setNextPageFirstParagraphTextPos(paragraphs[i].getEndPosition());
-//                limit--;
-//                break;
-//            }
-//        }
-    }
-
     private void measurePreviousPageAndJump() {
         float drawY = textOffset.getY() + box.getBoundedHeight(); // 从底部开始倒推
         float topBound = textOffset.getY();
