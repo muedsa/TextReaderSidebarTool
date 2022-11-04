@@ -64,6 +64,7 @@ public class BoundedMultiLineTextBox {
                     switch (key) {
                         case FONT_FAMILY:
                             font = new Font((String) data, Font.PLAIN, font.getSize());
+                            break;
                         case FONT_SIZE:
                             font = new Font(font.getFamily(), Font.PLAIN, (int) data);
                             break;
