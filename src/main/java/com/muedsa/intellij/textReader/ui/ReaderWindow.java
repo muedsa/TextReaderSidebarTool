@@ -32,10 +32,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Vector;
@@ -113,6 +110,47 @@ public class ReaderWindow implements Disposable {
     }
 
     private void createUIComponents(){
+        //编辑器 禁止编辑 显示光标 WASD键改为方向键
+        textContent.setEditable(false);
+        textContent.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        textContent.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                JTextPane textPane = (JTextPane) e.getComponent();
+                textPane.getCaret().setVisible(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                JTextPane textPane = (JTextPane) e.getComponent();
+                textPane.getCaret().setVisible(false);
+            }
+        });
+
+        textContent.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyChar()){
+                    case 'w':
+                        e.setKeyCode(KeyEvent.VK_UP);
+                        e.setKeyChar('\uFFFF');
+                        break;
+                    case 'a':
+                        e.setKeyCode(KeyEvent.VK_LEFT);
+                        e.setKeyChar('\uFFFF');
+                        break;
+                    case 's':
+                        e.setKeyCode(KeyEvent.VK_DOWN);
+                        e.setKeyChar('\uFFFF');
+                        break;
+                    case 'd':
+                        e.setKeyCode(KeyEvent.VK_RIGHT);
+                        e.setKeyChar('\uFFFF');
+                        break;
+                }
+            }
+        });
+
         //字体
         String[] fontFamilyNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>(fontFamilyNames);
