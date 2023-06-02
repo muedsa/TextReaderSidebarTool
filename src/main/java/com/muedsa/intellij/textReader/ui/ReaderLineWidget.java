@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget, StatusBarWidget.TextPresentation {
@@ -67,6 +68,18 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
         config = TextReaderConfigStateService.getInstance();
         ReaderLineWidgetHolder.put(project, this);
         initConfigMessageBusSubscribe();
+        component.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON1){
+                    if(e.isAltDown()){
+                        ReaderLineUtil.previousLine(TextReaderConfigStateService.getInstance(), project);
+                    }else{
+                        ReaderLineUtil.nextLine(TextReaderConfigStateService.getInstance(), project);
+                    }
+                }
+            }
+        });
     }
 
     private void initConfigMessageBusSubscribe(){
