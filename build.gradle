@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.muedsa.intellij.text-reader-sidebar-tool'
-version '2022.12.21'
+version '2023.06.02'
 
 repositories {
     mavenCentral()
