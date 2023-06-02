@@ -10,6 +10,6 @@ public class EmptyLineAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         TextReaderConfigStateService config = TextReaderConfigStateService.getInstance();
-        ReaderLineUtil.clear(config.getShowReaderLineType(), config, e.getProject());
+        ReaderLineUtil.clearLast();
     }
 }

@@ -21,7 +21,7 @@ public class UiUtil {
 
     public static void setEditorTextBackground(Editor editor, String text, TextReaderConfig config){
         if(text == null){
-            editor.getContentComponent().setBorder(null);
+            resetEditorBackground(editor);
         }else{
             Font font = new Font(config.getFontFamily(), Font.PLAIN, config.getFontSize());
             TextLayoutProperty textLayoutProperty = new TextLayoutProperty(font, config.getReaderLineColor(),
@@ -31,5 +31,9 @@ public class UiUtil {
             MultiLineTextImageBorder border = new MultiLineTextImageBorder(text, textLayoutProperty, textOffset);
             editor.getContentComponent().setBorder(border);
         }
+    }
+
+    public static void resetEditorBackground(Editor editor){
+        editor.getContentComponent().setBorder(null);
     }
 }

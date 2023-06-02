@@ -90,7 +90,7 @@ public class ReaderLineWidget implements StatusBarWidget, CustomStatusBarWidget,
                         ShowReaderLineType showReaderLineType = (ShowReaderLineType) data;
                         setLine(DEFAULT_LINE);
                         if(ShowReaderLineType.STATUS_BAR.equals(showReaderLineType)){
-                            ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
+                            ReaderLineUtil.clearLast();
                             StatusBarWidgetFactory widgetFactory = project.getService(StatusBarWidgetsManager.class).findWidgetFactory(ID);
                             if(widgetFactory != null) {
                                 ServiceManager.getService(StatusBarWidgetSettings.class).setEnabled(widgetFactory, true);

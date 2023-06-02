@@ -420,7 +420,7 @@ public class ReaderWindow implements Disposable {
             textContent.setCaretPosition(0);
             searchTextField.setText("");
             searchTextField.setEnabled(false);
-            ReaderLineUtil.clear(config.getShowReaderLineType(), config, project);
+            ReaderLineUtil.clearLast();
         });
     }
 
