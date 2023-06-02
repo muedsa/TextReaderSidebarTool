@@ -1,17 +1,17 @@
 # TextReaderSideBarTool
 
 [![API](https://img.shields.io/badge/IC-2020.1%2B-yellow.svg?labelColor=white&style=flat&logo=jetBrains&logoColor=black)](https://www.jetbrains.com)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/MUedsa/TextReaderSiderTool?logo=github)](https://github.com/MUedsa/TextReaderSiderTool/commits/master)
-[![CodeFactor](https://www.codefactor.io/repository/github/muedsa/textreadersidertool/badge)](https://www.codefactor.io/repository/github/muedsa/textreadersidertool)
-[![GitHub Releases](https://img.shields.io/github/downloads/MUedsa/TextReaderSiderTool/total?logo=github)](https://github.com/MUedsa/TextReaderSiderTool/releases)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/muedsa/TextReaderSidebarTool?logo=github)](https://github.com/muedsa/TextReaderSidebarTool/commits/master)
+[![CodeFactor](https://www.codefactor.io/repository/github/muedsa/textreadersidebartool/badge)](https://www.codefactor.io/repository/github/muedsa/textreadersidertool)
+[![GitHub Releases](https://img.shields.io/github/downloads/muedsa/TextReaderSidebarTool/total?logo=github)](https://github.com/muedsa/TextReaderSidebarTool/releases)
 
 ![](/record.webp)
 
 ## Download And Install
 
-[Releases](https://github.com/MUedsa/TextReaderSiderTool/releases)
+[Releases](https://github.com/muedsa/TextReaderSidebarTool/releases)
 
-Install: [#1](https://github.com/MUedsa/TextReaderSiderTool/issues/1)
+Install: [#1](https://github.com/muedsa/TextReaderSidebarTool/issues/1)
 
 ## Feature
 - [x] 智障分章读
