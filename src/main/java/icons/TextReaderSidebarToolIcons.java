@@ -6,5 +6,5 @@ import javax.swing.*;
 
 
 public interface TextReaderSidebarToolIcons {
-    Icon BOOK_DEAD = IconLoader.getIcon("/icons/bookDead.svg", TextReaderSidebarToolIcons.class);
+    Icon BOOK_SKULL = IconLoader.getIcon("/images/bookSkull.svg", TextReaderSidebarToolIcons.class);
 }

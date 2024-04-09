@@ -167,17 +167,18 @@
         anchor="bottom"
         secondary="true"
         factoryClass="com.muedsa.intellij.textReader.factory.ReaderWindowFactoryImpl"
-        icon="TextReaderSidebarToolIcons.BOOK_DEAD"/>
+        icon="TextReaderSidebarToolIcons.BOOK_SKULL"/>
     <statusBarWidgetFactory
         id="ReaderLineWidget"
         implementation="com.muedsa.intellij.textReader.factory.ReaderLineStatusBarWidgetFactoryImpl">
     </statusBarWidgetFactory>
+    <iconMapper mappingFile="TextReaderSidebarToolIconMappings.json"/>
   </extensions>
 
   <actions>
     <group id="com.muedsa.intellij.textReader.groupAction"
            text="Text Reader"
-           icon="TextReaderSidebarToolIcons.BOOK_DEAD"
+           icon="TextReaderSidebarToolIcons.BOOK_SKULL"
            popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <action id="com.muedsa.intellij.textReader.nextLineAction"
