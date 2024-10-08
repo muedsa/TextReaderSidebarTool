@@ -13,7 +13,7 @@ repositories {
 dependencies {
     implementation fileTree('lib') { include '*.jar' }
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
