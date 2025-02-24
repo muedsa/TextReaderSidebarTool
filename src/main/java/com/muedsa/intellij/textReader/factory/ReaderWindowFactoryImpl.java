@@ -15,7 +15,7 @@ public class ReaderWindowFactoryImpl implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ReaderWindow readerWindow = new ReaderWindow(project);
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = ContentFactory.getInstance();
         ContentManager contentManager = toolWindow.getContentManager();
         Content content = contentFactory.createContent(readerWindow.getContent(), "", false);
         Disposer.register(content, readerWindow);
