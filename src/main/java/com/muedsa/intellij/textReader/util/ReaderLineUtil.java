@@ -18,6 +18,8 @@ import com.muedsa.intellij.textReader.ui.ReaderLineWidgetHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.Objects;
 
 
@@ -28,6 +30,8 @@ public class ReaderLineUtil {
     private static Editor LAST_EDITOR = null;
 
     private static EditorMouseListener LAST_EDITOR_LISTENER = null;
+
+    private static MouseWheelListener LAST_EDITOR_MOUSE_WHEEL_LISTENER = null;
 
     private static ShowReaderLineType SHOW_READER_LINE_TYPE_FROM_LAST = null;
 
@@ -110,8 +114,10 @@ public class ReaderLineUtil {
         clear(LAST_PROJECT, LAST_EDITOR);
         if(LAST_EDITOR != null && LAST_EDITOR_LISTENER != null){
             LAST_EDITOR.removeEditorMouseListener(LAST_EDITOR_LISTENER);
+            LAST_EDITOR.getContentComponent().removeMouseWheelListener(LAST_EDITOR_MOUSE_WHEEL_LISTENER);
             LAST_EDITOR = null;
             LAST_EDITOR_LISTENER = null;
+            LAST_EDITOR_MOUSE_WHEEL_LISTENER = null;
         }
     }
 
@@ -123,6 +129,7 @@ public class ReaderLineUtil {
             clearFlag = true;
         }
         EditorMouseListener listener = null;
+        MouseWheelListener mouseWheelListener = null;
         if(editor != null && LAST_EDITOR != editor){
             listener = new EditorMouseListener() {
                 @Override
@@ -139,8 +146,21 @@ public class ReaderLineUtil {
                     }
                 }
             };
+            mouseWheelListener = e -> {
+                if (config.isEnableNextLineActionByScrollRadioButton()
+                        && e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                    if (e.getWheelRotation() > 0) {
+                        ReaderLineUtil.nextLine(TextReaderConfigStateService.getInstance(),
+                                editor.getProject());
+                    } else {
+                        ReaderLineUtil.previousLine(TextReaderConfigStateService.getInstance(),
+                                editor.getProject());
+                    }
+                }
+            };
             editor.addEditorMouseListener(listener);
             registerClearEditorHistoryDispose(editor);
+            editor.getContentComponent().addMouseWheelListener(mouseWheelListener);
             clearFlag = true;
         }
 
@@ -151,6 +171,7 @@ public class ReaderLineUtil {
         LAST_PROJECT = project;
         if(editor != null && LAST_EDITOR != editor){
             LAST_EDITOR_LISTENER = listener;
+            LAST_EDITOR_MOUSE_WHEEL_LISTENER = mouseWheelListener;
         }
         LAST_EDITOR = editor;
         SHOW_READER_LINE_TYPE_FROM_LAST = config.getShowReaderLineType();
@@ -163,8 +184,7 @@ public class ReaderLineUtil {
     }
 
     public static void registerClearEditorHistoryDispose(Editor editor){
-        if(editor instanceof EditorImpl){
-            EditorImpl editorImpl = (EditorImpl) editor;
+        if (editor instanceof EditorImpl editorImpl) {
             Disposer.register(editorImpl.getDisposable(), () -> {
                 if(Objects.equals(editor, LAST_EDITOR)) LAST_EDITOR = null;
             });

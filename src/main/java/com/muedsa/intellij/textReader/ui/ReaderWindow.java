@@ -79,6 +79,9 @@ public class ReaderWindow implements Disposable {
     private ButtonGroup editorBackgroundOffsetTypeButtonGroup;
     private JSpinner offsetXSpinner;
     private JSpinner offsetYSpinner;
+    private JRadioButton enableNextLineActionByScrollRadioButton;
+    private JRadioButton disableNextLineActionByScrollRadioButton;
+    private ButtonGroup nextLineActionByScrollButtonGroup;
     private final TextReaderCore textReaderCore;
 
     private int id;
@@ -281,6 +284,18 @@ public class ReaderWindow implements Disposable {
         offsetYSpinner.setModel(editBackgroundOffsetYSpinnerModel);
         editBackgroundOffsetYSpinnerModel.addChangeListener(e -> config.changeConfig(ConfigKey.EDITOR_BACKGROUND_OFFSET_Y,
                 offsetYSpinner.getValue(), ReaderWindow.this));
+
+        // 鼠标滚动控制下一行
+        nextLineActionByScrollButtonGroup = new ButtonGroup();
+        nextLineActionByScrollButtonGroup.add(enableNextLineActionByScrollRadioButton);
+        nextLineActionByScrollButtonGroup.add(disableNextLineActionByScrollRadioButton);
+        updateNextLineActionByScrollRadioButtonButtonGroup(config.isEnableNextLineActionByScrollRadioButton());
+        ActionListener nextLineActionByScrollRadioButtonActionListener = e ->
+                config.changeConfig(ConfigKey.ENABLE_NEXT_LINE_ACTION_BY_SCROLL,
+                        nextLineActionByScrollButtonGroup.getSelection().equals(enableNextLineActionByScrollRadioButton.getModel()),
+                        ReaderWindow.this);
+        enableNextLineActionByScrollRadioButton.addActionListener(nextLineActionByScrollRadioButtonActionListener);
+        disableNextLineActionByScrollRadioButton.addActionListener(nextLineActionByScrollRadioButtonActionListener);
 
         //添加文件
         fileButton.addActionListener(e -> {
@@ -603,6 +618,14 @@ public class ReaderWindow implements Disposable {
             case RIGHT_BOTTOM:
                 editorBackgroundOffsetTypeButtonGroup.setSelected(atRightBottomRadioButton.getModel(), true);
                 break;
+        }
+    }
+
+    private void updateNextLineActionByScrollRadioButtonButtonGroup(boolean enable){
+        if (enable) {
+            nextLineActionByScrollButtonGroup.setSelected(enableNextLineActionByScrollRadioButton.getModel(), true);
+        } else {
+            nextLineActionByScrollButtonGroup.setSelected(disableNextLineActionByScrollRadioButton.getModel(), true);
         }
     }
 

@@ -50,6 +50,8 @@ public abstract class TextReaderConfig {
     //编辑器背景竖直偏移量
     private int editBackgroundOffsetY = 400;
 
+    private boolean enableNextLineActionByScrollRadioButton = false;
+
     @Transient
     private ConfigChangeNotifier notifier;
 
@@ -95,6 +97,8 @@ public abstract class TextReaderConfig {
             case EDITOR_BACKGROUND_OFFSET_Y:
                 editBackgroundOffsetY = (int) value;
                 break;
+            case ENABLE_NEXT_LINE_ACTION_BY_SCROLL:
+                enableNextLineActionByScrollRadioButton = (boolean) value;
         }
         notifier.configChanged(key, value, source);
     }
@@ -193,5 +197,13 @@ public abstract class TextReaderConfig {
 
     public void setEditBackgroundOffsetY(int editBackgroundOffsetY) {
         this.editBackgroundOffsetY = editBackgroundOffsetY;
+    }
+
+    public boolean isEnableNextLineActionByScrollRadioButton() {
+        return enableNextLineActionByScrollRadioButton;
+    }
+
+    public void setEnableNextLineActionByScrollRadioButton(boolean enableNextLineActionByScrollRadioButton) {
+        this.enableNextLineActionByScrollRadioButton = enableNextLineActionByScrollRadioButton;
     }
 }
