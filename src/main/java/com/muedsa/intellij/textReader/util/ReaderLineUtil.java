@@ -146,18 +146,20 @@ public class ReaderLineUtil {
                     }
                 }
             };
-            mouseWheelListener = e -> {
-                if (config.isEnableNextLineActionByScrollRadioButton()
-                        && e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-                    if (e.getWheelRotation() > 0) {
-                        ReaderLineUtil.nextLine(TextReaderConfigStateService.getInstance(),
-                                editor.getProject());
-                    } else {
-                        ReaderLineUtil.previousLine(TextReaderConfigStateService.getInstance(),
-                                editor.getProject());
+            if (config.isEnableNextLineActionByScrollRadioButton()) {
+                mouseWheelListener = e -> {
+                    if (config.isEnableNextLineActionByScrollRadioButton()
+                            && e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                        if (e.getWheelRotation() > 0) {
+                            ReaderLineUtil.nextLine(TextReaderConfigStateService.getInstance(),
+                                    editor.getProject());
+                        } else {
+                            ReaderLineUtil.previousLine(TextReaderConfigStateService.getInstance(),
+                                    editor.getProject());
+                        }
                     }
-                }
-            };
+                };
+            }
             editor.addEditorMouseListener(listener);
             registerClearEditorHistoryDispose(editor);
             editor.getContentComponent().addMouseWheelListener(mouseWheelListener);
